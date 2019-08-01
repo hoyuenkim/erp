@@ -1,0 +1,228 @@
+<% include ../../header.ejs %>
+<% include ../../navibar.ejs %>
+
+<div class="col-sm-offset-1 col-sm-10">
+    <div class="panel panel-default">
+        <div class="panel-heading">
+            <table class="table table-borderless" style="padding-bottom : 0%; margin-bottom : 0%;">
+                <colgroup>
+                    <col width="90%">
+                    <col width="10%">
+                </colgroup>
+                <tr>
+                    <td>
+                        <h4><%=logs.subject%> 현장</h4>
+                    </td>
+                    <td>
+                        <div class="btn btn-default" id="add" style="padding-top : 0%; padding-bottom : 0%;">
+                            <h5>
+                                추가하기
+                            </h5>
+                        </div>
+                    </td>
+                </tr>
+            </table>
+        </div>
+        <div class="panel-body">
+            <table id="table" class="table table-borderless">
+                <colgroup>
+                    <col width="25%">
+                    <col width="15%">
+                    <col width="50%">
+                    <col width="5%">
+                    <col width="5%">
+                </colgroup>
+                <tr id="logs" style="background-color: #F2F2F2">
+                    <th>수량</th>
+                    <th>일자</th>
+                    <th align="center">비고</th>
+                    <th align="center">수정</th>
+                    <th align="center">삭제</th>
+                </tr>
+                <% if (logs.aslog.length == 0){ %>
+                    <tr id="empty">
+                        <td colspan="5" align="center"><h3>정보 없음</h3></td>
+                    </tr>
+                <%}%>
+                <% logs.aslog.forEach(function(log){%>
+                    <tr dependancy="<%=log.dependancy%>" id='<%=log._id%>'>                        
+                        <td><input class="form-control unit" type="text" readonly value="<%=log.unit%>" numberOnly former='<%=log.unit%>'></td>
+                        <td><input class="form-control datepicker" type="text" disabled value="<%=log.date.toLocaleDateString()%>"></td>
+                        <td><input class="form-control" type="text" readonly value="<%=log.comment%>"></td>
+                        <%if(log.comment == "초기현장분"){%>
+                            <td><div class="btn btn-primary" disabled id="<%=log._id%>">수정</div></td>
+                            <td><div class="btn btn-danger" disabled id="<%=log._id%>">삭제</div></td>
+                        <%} else {%>
+                        <td><div class="btn btn-primary edit" id="<%=log._id%>">수정</div></td>
+                        <td><div class="btn btn-danger delete">삭제</div></td>
+                        <% } %>
+                    </tr>
+                    <% }); %>
+                <tr style="border-top : #f2f2f2 1px solid">
+                    <th>잔여수량</th>
+                    <td colspan="2" align="right" id="remain"><%=logs.remain.received-logs.ship%></td>
+                    <td colspan="2"></td>
+                </tr>
+            </table>
+        </div>
+    </div>
+</div>
+
+<script>
+
+    $(document).on("keyup", "input:text[numberOnly]", function() {
+        $(this).val($(this).val().replace(/[^0-9]/g,""));
+    });
+
+    $(document).on('focus', '.datepicker', function(){
+        $(this).datepicker({
+            dateFormat: 'yy-mm-dd'
+        });
+    });
+
+    $(document).on('click', '.delete', function(){
+        const obj = {};
+        const that = $(this);
+        obj.id = '<%=logs.id%>';
+        obj.product = '<%=logs.product%>'
+        obj.subject = '<%=logs.subject%>'
+        obj.unit = $(this).closest('tr').children('td').eq(0).children('input').val();
+        obj._id = $(this).closest('tr').attr('id');
+        obj.dependancy = $(this).closest('tr').attr('dependancy');
+        if(!obj._id){             
+            const rows = $('#table tbody>tr').length;
+            if(rows == 3){
+                 $('#logs').after(`
+                 <tr id="empty">
+                        <td colspan="5" align="center"><h3>정보 없음</h3></td>
+                    </tr>
+                 `)
+             }
+            that.closest('tr').remove();
+        } else {
+        $.ajax({
+            data : obj,
+            dataType : 'json',
+            type : 'POST',
+            url : '/order/as/delete'
+        })
+        .done(function(args){
+            that.closest('tr').remove();
+            const rows = $('#table tbody>tr').length;
+            if(rows == 2){
+                 $('#logs').after(`
+                 <tr id="empty">
+                        <td colspan="5" align="center"><h3>정보 없음</h3></td>
+                    </tr>
+                 `)
+             }
+             const former = that.closest('tr').children('td').eq(0).children('input').attr('former');
+             const remain = parseInt($('#remain').text());
+             $('#remain').text(remain+parseInt(former));
+        })
+        .fail(function(err){
+            if(err) console.error(err);
+        });
+      }
+    });
+
+    $(document).on('focusout', '.unit', function(){
+        let former = 0;
+        const plus = $(this).attr('former');
+        if(plus) former = parseInt(plus);
+        const remain = parseInt($('#remain').text()) + former;
+        const unit = parseInt($(this).val());
+        if(remain < unit){
+            alert('재고 수량보다 많은 수량을 입력할 수는 없습니다');
+            $(this).val('');
+            return false;
+        }
+    });
+
+    $(document).on('click', '.edit', function(){
+        const tr = $(this).closest('tr');
+        tr.children('td').eq(0).children('input').attr('readonly', false);
+        tr.children('td').eq(1).children('input').attr('disabled', false).attr('readonly', true);
+        tr.children('td').eq(2).children('input').attr('readonly', false);
+        $(this).attr('class', 'btn btn-default submit').text('제출')
+    });
+
+    $(document).on('click', '#add', function(){
+        $('#empty').remove();
+        $('#logs').after(`
+           <tr>
+            <td><input class="form-control unit" numberOnly type="text"></td>
+            <td><input class="form-control datepicker" readonly type="text"></td>
+            <td><input class="form-control" type="text"></td>
+            <td><div class="btn btn-default regist">제출</div></td>
+            <td><div class="btn btn-danger delete">삭제</div></td>
+           </tr>
+        `)
+    });
+
+    $(document).on('click', '.submit', function(){
+        const obj = {};
+        const that = $(this);
+        obj.id = '<%=logs.id%>';
+        obj._id = that.attr('id');
+        obj.product = '<%=logs.product%>'
+        obj.unit = that.closest('tr').children('td').eq(0).children('input').val();
+        obj.date = that.closest('tr').children('td').eq(1).children('input').val();
+        obj.comment = that.closest('tr').children('td').eq(2).children('input').val();
+        if(!obj.unit || !obj.date){
+            alert('필수 값을 모두 채워 주세요');
+            return false;
+        };
+        $.ajax({
+            data: obj,
+            dataType : 'json',
+            type : 'POST',
+            url : '/order/as/edit'
+        })
+        .done(function(args){
+          const minus =  parseInt(obj.unit) - parseInt(that.closest('tr').children('td').children('input').attr('former'));
+          const remain = parseInt($('#remain').text()) - minus;
+          $('#remain').text(remain);
+          that.closest('tr').children('td').eq(0).children('input').val(obj.unit).attr('readonly', true);
+          that.closest('tr').children('td').eq(1).children('input').val(obj.date).attr('disabled', true);
+          that.closest('tr').children('td').eq(2).children('input').val(obj.comment).attr('readonly', true);
+          that.text('수정').attr('class', 'btn btn-primary edit');
+        })
+        .fail(function(err){
+            if(err) console.error(err);
+        })
+    });
+
+    $(document).on('click', '.regist', function(){
+        const obj = {};
+        const that = $(this);
+        obj.id = '<%=logs.id%>';
+        obj.unit = that.closest('tr').children('td').eq(0).children('input').val();
+        obj.date = that.closest('tr').children('td').eq(1).children('input').val();
+        obj.comment = that.closest('tr').children('td').eq(2).children('input').val();
+        if(!obj.unit || !obj.date){
+            alert('필수 값을 모두 채워 주세요');
+            return false;
+        }
+        $.ajax({
+            data: obj,
+            dataType : 'json',
+            type : 'POST',
+            url : '/order/as/regist'
+        })
+        .done(function(args){
+          that.closest('tr').children('td').eq(0).children('input').val(obj.unit).attr('readonly', true);
+          that.closest('tr').children('td').eq(1).children('input').val(obj.date).attr('disabled', true);
+          that.closest('tr').children('td').eq(2).children('input').val(obj.comment).attr('readonly', true);
+          that.closest('tr').children('td').eq(0).children('input').attr('former', obj.unit);
+          that.closest('tr').attr('id', args._id);
+          that.attr('class', 'btn btn-primary edit').text('수정');
+          $('#remain').text(parseInt($('#remain').text())-parseInt(obj.unit));
+        })
+        .fail(function(err){
+            if(err) console.error(err);
+        })
+    });
+</script>
+
+<% include ../../footer.ejs %>

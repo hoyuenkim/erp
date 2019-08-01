@@ -1,0 +1,81 @@
+<% include ../header.ejs %>
+<% include ../navibar.ejs %>
+
+<div class="col-sm-offset-1 col-sm-10">
+  <div class="col-sm-10">
+    <h1>업체리스트</h1>
+  </div>
+  <div class="col-sm-2">
+    <a href="/customer/regist" style="text-decoration : none; cursor : pointer;">
+      <h2>
+        등록하기
+      </h2>
+    </a>
+  </div>
+    <table class="table table-borderless table-striped table-hover">
+        <tr>
+            <th>업체명</th>
+            <th>대표자명</th>
+            <th>사업자등록번호</th>
+            <th>전화번호</th>
+            <th>주소</th>
+            <th>담당자명</th>
+        </tr>
+        <% customers.forEach(function(customer){ %>
+            <tr onclick="location.href='/customer/company/<%=customer.id%>'" style="cursor : pointer;">
+                <td><%=customer.name%></td>
+                <td><%=customer.ceo%></td>
+                <td><%=customer.bizcode%></td>
+                <td><%=customer.phone%></td>
+                <td><%=customer.addr%>, <%=customer.addr_detail%></td>
+                <td><%=customer.attention%></td>
+            </tr>
+        <% }) %>
+    </table>
+
+    <div class="" style="text-align : center;">
+        <ul>
+          <%
+            var offset = 3;
+            var partialQuery;
+            if(urlQuery) partialQuery = urlQuery.replace(/&page=(.*?)(&|$)/ig,"");
+          %>
+          <% for(i=1;i<=maxPage;i++){ %>
+            <% if(i<=offset || i>maxPage-offset || (i>=page-(offset-1) && i<=page+(offset-1))){ %>
+              <% if(i != page){ %>
+                <li style="display : inline-block;"><a href="/customer/home?<%=partialQuery%>&page=<%= i %>">[ <%= i %> ]</a></li>
+                <% } else { %>
+                  <li style="display : inline-block;">[ <b><%= i %></b> ]</li>
+                  <% } %>
+                <% } else if(i == offset+1 || i == maxPage-offset){ %>
+                  <li style="display : inline-block;">...</li>
+                <% } %>
+              <%}%>
+        </ul>
+      </div>
+      <form class="col-sm-12" action="" id="search">
+          <table class="table">
+            <tr>
+              <td class=col-sm-3>
+                <select class="form-control" name="searchType">
+                  <% var select %>
+                  <option value="name"
+                  <%= search.searchType=="name"?select="selected":"" %>>회사명</option>
+                  <option value="attention"
+                  <%= search.searchType=="attention"?select="selected":"" %>>담당자</option>
+                </select>
+              </td>
+              <td class="col-sm-7">
+                <input class="form-control" type="text" name="searchText" value="<%= select?search.searchText:"" %>">
+              </td>
+              <td class="col-sm-2">
+                <button class="btn btn-default" type="submit" style="width : 100%;">search</button>
+              </td>
+            </tr>
+          </table>
+        </form>
+</div>
+
+</div>
+
+<% include ../footer.ejs %>

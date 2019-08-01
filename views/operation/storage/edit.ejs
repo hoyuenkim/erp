@@ -1,0 +1,324 @@
+<% include ../../header.ejs %> <% include ../../navibar.ejs %>
+
+<div class="col-sm-offset-1 col-sm-5">
+  <div class="col-sm-12" style="background-color: #F2F2F2;">
+    <h4>구매내역</h4>
+  </div>
+  <hr>
+  <form class="form-group" method="post" action="">
+    <table class="table table-borderless">
+      <tr>
+        <th>회사명</th>
+        <td><%=storage.customer.name%></td>
+      </tr>
+      <tr>
+        <th>제품명</th>
+        <td><%=storage.product.product%></td>
+      </tr>
+      <tr>
+        <th>수량</th>
+        <td>
+          <input
+            id="unit"
+            class="form-control"
+            type="text"
+            name="unit"
+            value="<%=storage.unit%>"
+          />
+        </td>
+      </tr>
+      <tr>
+        <th>총계</th>
+        <td>
+          <input
+            id="amount"
+            class="form-control"
+            type="text"
+            readonly
+            name="amount"
+            value="<%=storage.amount%>"
+            numberOnly
+          />
+        </td>
+      </tr>
+    </table>
+    <input
+      class="btn btn-danger"
+      type="submit"
+      value="제출하기"
+      style="width : 100%;"
+    />
+  </form>
+</div>
+<div class="col-sm-5" style="background-color: #F2F2F2">
+  <div class="col-sm-10"><strong><h4>입고기록</h4></strong></div>
+  <div class="col-sm-2">
+    <span id="add" style="cursor : pointer;"><h4>추가</h4></span>
+  </div>
+  </div>
+</div>
+<div class="col-sm-5">
+  <table class="table table-borderless" id="log">
+    <colgroup>
+      <col width="30%">
+      <col width="50%">
+      <col width="10%">
+      <col width="10%">
+    </colgroup>
+        <tr>
+          <th>일자</th>
+          <th>수량</th>
+          <th>수정</th>
+          <th>삭제</th>
+        </tr>
+        <%if(storage.income.length == 0){%>
+          <tr>
+              <td><input class="form-control datepicker" type="text" readonly></td>
+              <td><input class="form-control unit" numberOnly type="text">
+                <input class="former" type="hidden" value=0>
+              </td>
+              <td><button class="btn btn-primary regist">등록</button></td>
+              <td><button class="btn btn-danger delete">삭제</button></td>      
+          </tr>
+        <%}%>
+        <%storage.income.forEach(function(log){%>
+        <tr>
+          <td><input class="form-control datepicker" type="text" value="<%=log.date.toLocaleDateString()%>" readonly></td>
+          <td><input class="form-control unit" type="text" value="<%=log.unit%>" numberOnly readonly>
+            <input class="former" type="hidden" value="<%=log.unit%>">
+          </td>
+          <td><button class="btn btn-success edit" id="<%=log._id%>">수정</button></td>
+          <td><button class="btn btn-danger delete" id="<%=log._id%>">삭제</button></td>      
+        </tr>
+        <%})%>
+      </table>
+      <div style="border-top: 0.5px grey solid; width : 100%;">
+        <div class="col-sm-3">
+          <h4>잔여</h4>
+        </div>
+        <div class="col-sm-9" style="text-align: right">
+          <h4>
+            <span id="remain"><%=storage.remain.remain%></span>
+          </h4>
+        </div>
+      </div>
+</div>
+
+<script>
+    $(document).on("keyup", "input:text[numberOnly]", function() {
+        $(this).val($(this).val().replace(/[^0-9]/g,""));
+    });
+  $(document).ready(function(){
+    if('<%=storage.status%>' == 1){
+      $('.delete').attr('disabled', true);
+      $('.edit').attr('disabled', true);
+      $('input[type="submit"]').attr('disabled', true);
+      $('input[name="unitPrice"]').attr('disabled', true);
+      $('input[name="unit"]').attr('disabled', true);
+    }
+  });
+
+  $("#unitPrice").focusout(function() {
+    if (!$("#unit").val()) {
+      $("#unit").focus();
+      return false;
+    } else {
+      const amount = $("#unit").val() * $("#unitPrice").val();
+      $("#amount").val(amount);
+    }
+  });
+
+  $("#unit").focusout(function() {
+    if (!$("#unitPrice").val()) {
+      $("#unitPrice").focus();
+      return false;
+    } else {
+      const amount = $("#unit").val() * $("#unitPrice").val();
+      $("#amount").val(amount);
+    }
+  });
+
+  $(document).on('focus', '.datepicker', function(){
+    $(this).datepicker({
+    dateFormat: 'yy-mm-dd'
+     });
+  });
+  
+  $(document).on('click', '.edit', function(){
+    $(this).closest('tr').children('td').eq(1).children('input').attr('readonly', false);
+    $(this).attr('class', 'btn btn-primary submit').text('제출');
+  });
+
+  $(document).on('click', '.submit', function(){
+    const that = $(this);
+    const obj = {};
+    obj.id = '<%=storage.id%>';
+    obj._id = $(this).attr('id');
+    obj.product = '<%=storage.product._id%>';
+    obj.former = $(this).closest('tr').children('td').eq(1).children('input.former').val();
+    obj.date = $(this).closest('tr').children('td').eq(0).children('input').val();
+    obj.unit = $(this).closest('tr').children('td').eq(1).children('input.unit').val();
+    const remain = parseInt($('#remain').text()) + (parseInt(obj.former) - parseInt(obj.unit));
+    if(!obj.date || obj.unit == ""){
+      alert('필수 값을 채워주세요')
+      return false;
+    } else {
+      $.ajax({
+        data : obj,
+        dataType : 'json',
+        type : 'POST',
+        url : '/operation/storage/log/edit'
+      })
+      .done(function(args){
+          that.attr('class', 'btn btn-success edit').text('수정');
+          that.closest('tr').children('td').eq(0).children('input').val(args.date);
+          that.closest('tr').children('td').eq(1).children('input.unit').val(args.unit);
+          that.closest('tr').children('td').children('input').attr('readonly', true);
+          $('#remain').text(remain);
+      })
+      .fail(function(err){
+        console.error(err);
+      });
+    };
+  });
+
+    $(document).on('click', '.regist', function(){
+    const that = $(this);
+    const obj = {};
+    obj.id = '<%=storage.id%>';
+    obj._id = $(this).attr('id');
+    obj.product = '<%=storage.product._id%>';
+    obj.date = $(this).closest('tr').children('td').eq(0).children('input').val();
+    obj.unit = $(this).closest('tr').children('td').eq(1).children('input.unit').val();
+    const remain = parseInt($('#remain').text()) - parseInt(obj.unit);
+    if(!obj.date || obj.unit == ""){
+      alert('필수 값을 채워주세요')
+      return false;
+    } else {
+      $.ajax({
+        data : obj,
+        dataType : 'json',
+        type : 'POST',
+        url : '/operation/storage/log/regist'
+      })
+      .done(function(args){
+          that.attr('class', 'btn btn-success edit').text('수정');
+          that.closest('tr').children('td').eq(0).children('input').val(args.date);
+          that.closest('tr').children('td').eq(1).children('input.unit').val(args.unit);
+          that.closest('tr').children('td').eq(1).children('input[type="hidden"]').val(args.unit);
+          that.closest('tr').children('td').children('input').attr('readonly', true);
+          that.attr('id', args._id);
+          that.closest('tr').children('td').eq(2).children('button').attr('id', args._id);
+          that.closest('tr').children('td').eq(3).children('button').attr('id', args._id);
+          $('#remain').text(remain);
+      })
+      .fail(function(err){
+        console.error(err);
+      });
+    };
+  }); 
+
+  $(document).on('click', '.delete', function(){
+    const that = $(this);
+    const obj = {};
+    obj._id = $(this).attr('id');
+    obj.unit = $(this).closest('tr').children('td').eq(1).children('input.unit').val();
+    obj.id = '<%=storage.id%>';
+    obj.product = '<%=storage.product._id%>';
+    const remain = parseInt($('#remain').text()) + parseInt(obj.unit);
+    const count = $(this).closest('table').children('tbody').children('tr').length;
+    $.ajax({
+      data : obj,
+      dataType : 'json',
+      type : 'POST',
+      url : '/operation/storage/log/delete'
+    })
+    .done(function(args){
+      if(args.message == 1){
+        if(count > 2){
+          that.closest('tr').remove();
+          $('#remain').text(remain);
+        } else {
+          that.closest('tr').remove();
+          $('#remain').text('<%=storage.unit%>');
+          $('#log > tbody:last').append(
+            `
+          <tr>
+            <td><input class="form-control datepicker" type="text" readonly></td>
+            <td><input class="form-control unit" numberOnly type="text">
+            <input type="hidden" class="former" value=0>
+            </td>
+            <td><button class="btn btn-primary regist">등록</button></td>
+            <td><button class="btn btn-danger delete">삭제</button></td>      
+          </tr>
+            `
+          );
+        }
+      } else {
+        if(count > 2){
+          that.closest('tr').remove();
+        } else {
+          $('#remain').text('<%=storage.unit%>');
+          that.closest('tr').remove();
+          $('#log  > tbody:last').append(
+            `
+          <tr>
+            <td><input class="form-control datepicker" type="text" readonly></td>
+            <td><input class="form-control unit" numberOnly type="text">
+            <input type="hidden" class="former" value=0>
+            </td>
+            <td><button class="btn btn-primary regist">등록</button></td>
+            <td><button class="btn btn-danger delete">삭제</button></td>      
+          </tr>
+            `
+          )
+        }
+      }
+    })
+    .fail(function(err){
+      if(err) console.error(err);
+    })
+  });
+
+  $(document).on('focusout', '.unit', function(){
+    const former = $(this).closest('tr').children('td').eq(1).children('.former').val();
+    const unit = parseInt($(this).val());
+    const remain = parseInt($('#remain').text())+parseInt(former);
+    console.log(unit, remain)
+    if(remain < unit){
+      alert('남은 수량보다 더 많이 입력할 수 없습니다.');
+      $(this).val('');
+      return false;
+    }
+  });
+  
+  $(document).on('click', '#add', function(){
+    if('<%=storage.status%>' == 1){
+      return false;
+    } else {
+      $('#log > tbody:last').append(`
+          <tr>
+            <td><input class="form-control datepicker" type="text" readonly></td>
+            <td><input class="form-control unit" numberOnly type="text">
+            <input type="hidden" class="former" value=0>
+            </td>
+            <td><button class="btn btn-primary regist">등록</button></td>
+            <td><button class="btn btn-danger delete">삭제</button></td>      
+          </tr>
+      `);
+    };
+  });
+
+  $(document).on('focusout', '#unit', function(){
+    const unit = $(this).val();
+    const received = '<%=storage.remain.received%>';
+    if(unit < received){
+      alert('입고 수량보다 작게 수정할 수 없습니다');
+      $(this).val('');
+      return false;
+    }
+  });
+</script>
+
+
+<% include ../../footer.ejs %>

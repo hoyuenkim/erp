@@ -1,0 +1,435 @@
+<% include ../header.ejs %>
+<% include ../navibar.ejs %>
+
+<div class="col-sm-offset-1 col-sm-10">
+    <form class="form-group" action="" method="post">
+        <table class="table table-borderless">
+            <tr>
+                <th class="col-sm-2">프로젝트명</th>
+                <td class="col-sm-10"><input class="form-control" type="text" name="subject" id="subject"></td>
+            </tr>
+            <tr>
+                <th>클라이언트명</th>
+                <td>
+                    <select class="form-control" name="customer" id="customer">
+                        <option value="" selected disabled></option>
+                        <%customerList.forEach(function(customer){%>
+                        <option value="<%=customer.name%>"><%=customer.name%></option>
+                        <%});%>
+                    </select>
+                </td>
+            </tr>
+            <tr>
+                <th>납품일자</th>
+                <td><input class="form-control datepicker" type="text" name="date"></td>
+            </tr>
+            <tr>
+                <th></th>
+                <td><div class="col-sm-offset-6 col-sm-3"><div class="btn btn-default" style="width : 100%" id="addOnepass">원패스 추가</div></div><div class="col-sm-3"><div class="btn btn-default" style="width : 100%;" id="addServer">서버추가</div></div></td>
+            </tr>
+            <tr>
+                <td colspan=2>
+                    <div class="panel panel-default">
+                        <table class="table table-borderless table-striped" id="table">
+                            <colgroup>
+                                <col width="30%">
+                                <col width="10%">
+                                <col width="15%">
+                                <col width="20%">
+                                <col width="10%">
+                                <col width="10%">
+                                <col width="5%">
+                            </colgroup>
+                                <tr style="background-color: #ccc;" id="list">
+                                    <th>물품명</th>
+                                    <th>수량</th>
+                                    <th>단위가격</th>
+                                    <th>총 가격</th>
+                                    <th>구분</th>
+                                    <th>상태</th>
+                                    <th></th>
+                                </tr>
+                                <tr id="sample">
+                                    <td><input class="form-control" type="text" disabled value="-"></td>
+                                    <td><input class="form-control" type="text" disabled value="-"></td>
+                                    <td><input class="form-control" type="text" disabled value="-"></td>
+                                    <td><input class="form-control" type="text" disabled value="-"></td>
+                                    <td><input class="form-control" type="text" disabled value="-"></td>
+                                    <td><div class="btn btn-success" disabled>출고전</div></td>
+                                    <td><a class="remove" style="text-decoration: none;"><i class="fas fa-trash-alt"></i></a></td>
+                                </tr>                        
+                                    </table>
+                                </div>
+                                </td>
+                            </tr>
+                        </table>
+                        <div class="panel panel-default">
+                            <div class="panel-heading">
+                                현장 파일
+                            </div>
+                            <div class="panel-body">
+                                <table class="table table-borderless">
+                                    <tr>
+                                        <td>
+                                          <input type="checkbox" id="em" name="em" style="display: none;" value="false">
+                                          <label for="em" class="btn btn-default unuse" style="width : 100%;" target="em">비상벨</label>
+                                        </td>
+                                        <td>
+                                          <input type="checkbox" id="op" name="op" style="display: none;" value="false">
+                                          <label for="op" class="btn btn-default unuse" style="width : 100%;" target="op">원패스</label>
+                                        </td>
+                                        <td>
+                                          <input type="checkbox" id="parking" name="parking" style="display: none;" value="false">
+                                          <label for="parking" class="btn btn-default unuse" style="width : 100%;" target="parking">주차</label>
+                                        </td>
+                                        <td>
+                                          <input type="checkbox" id="ev" name="ev" style="display: none;" value="false">
+                                          <label for="ev" class="btn btn-default unuse" style="width : 100%;" target="ev">엘리베이터</label>
+                                        </td>
+                                        <td>
+                                          <input type="checkbox" id="cctv" name="cctv" style="display: none;" value="false">
+                                          <label for="cctv" class="btn btn-default unuse" style="width : 100%;" target="cctv">CCTV</label>
+                                        </td>
+                                        <td>
+                                          <input type="checkbox" id="hn" name="hn" style="display: none;" value="false">
+                                          <label for="hn" class="btn btn-default unuse" style="width : 100%;" target="hn">홈네트워크</label>
+                                        </td>
+                                    </tr>
+                                </table>
+                            </div>
+                        </div>
+                                     <input class="btn btn-danger" style="width : 100%;" type="submit" value="제출하기">
+                                </form>
+                                            
+<script>
+    $(document).on('focus', '.datepicker', function(){
+        $(this).datepicker({
+            dateFormat: 'yy-mm-dd'
+        });
+    });
+
+    $(document).on('submit' ,'.form-group', function(){
+        const products = $('.product').length;
+        if(products === 0){
+            alert('최소한 1개 이상의 품목을 채워주세요');
+            return false;
+        };
+        if(!$('#subject').val()){
+            alert('제목을 채워 주세요');
+            return false;
+        };
+        if(!$('#customer').val()){
+            alert('고객을 선택해주세요');
+            return false;
+        };
+        for(i=1;i<products+1;i++){
+            let product = $('#table').children('tbody').children('tr').eq(i).children('td').eq(0).children('.product').val();
+            let unit = $('#table').children('tbody').children('tr').eq(i).children('td').eq(1).children('.unit').val();
+            let unitPrice = $('#table').children('tbody').children('tr').eq(i).children('td').eq(2).children('input').val();
+            if(!product || !unit || !unitPrice){
+                alert('필수 값을 모두 채워 주세요');
+                return false;
+            };
+        };
+    });
+
+    $(document).on('change', '#customer', function(){
+        const obj = {};
+        obj.customer = $(this).val();
+        $.ajax({
+            url : '/customer/data',
+            data : obj,
+            dataType : 'json',
+            type : 'POST'            
+        })
+        .done(function(args){
+            $('#attention').text(args.customer.attention);
+            $('#phone').text(args.customer.phone);
+        })
+        .fail(function(err){
+            if(err) console.error(err);
+        });
+    });
+
+    $(document).on('click', '.unuse', function(){
+        $(this).attr('class', `btn btn-success use`);
+        $(this).closest('td').children('input[type="checkbox"]').val(true)
+    });
+
+    $(document).on('click', '.use', function(){
+        const obj = {};
+        obj.target = $(this).attr('target');
+        $(this).attr('class', `btn btn-default unuse`);
+        $(this).closest('td').children('input[type="checkbox"]').val(false);
+        $('#status').children(`.${obj.target}`).remove();
+    });
+
+    $(document).on('click', '#addOnepass', function(){
+        $('#sample').remove();
+        $('#list').after(`
+        <tr>
+            <td><input class="form-control onepass" type="text" placeholder="원패스 제품을 입력해 주세요">
+                <input class="product" type="hidden" name="onepassProduct">
+            </td>
+            <td><input class="form-control unit" type="text" numberOnly name="onepassUnit"></td>
+            <td><input class="form-control unitPrice" type="text" numberOnly name="onepassUnitPrice"></td>
+            <td><input class="form-control amount" type="text" numberOnly readonly></td>
+            <td>원패스</td>
+            <td><div class="btn btn-success opshipEach" disabled>출고전</div></td>
+            <td><a class="remove" style="text-decoration: none;"><i class="fas fa-trash-alt"></i></a>
+                <input type="hidden" name="opShip" value=false>    
+            </td>
+        </tr>
+        `)
+    });
+
+    $(document).on('click', '#addServer', function(){
+        $('#sample').remove();
+        $('#list').after(
+            `
+            <tr>
+                <td>
+                    <select class="form-control product" name="serverProduct">
+                        <option selected hidden disabled></option>
+                        <option value="1">서버기본세팅</option>
+                        <% serverList.forEach(function(server){%>
+                            <option value="<%=server._id%>"><%=server.product%></option>
+                        <%})%>
+                    </select>
+                </td>
+                <td><input class="form-control unit" type="text" numberOnly name="serverUnit"></td>
+                <td><input class="form-control unitPrice" type="text" numberOnly name="serverUnitPrice"></td>
+                <td><input class="form-control amount" type="text" numberOnly readonly></td>
+                <td>서버</td>
+                <td><div class="btn btn-success svshipEach" disabled>출고전</div></td>
+                <td><a class="remove" style="text-decoration: none;"><i class="fas fa-trash-alt"></i></a>
+                    <input type="hidden" name="svShip" value=false>    
+                </td>
+            </tr>
+            `
+        )
+    });
+
+$(document).on('change', 'select[name="serverProduct"]', function(){
+    const that = $(this);
+    const arr = [];
+    <% serverList.forEach(function(server){ %>
+        arr.push({_id : '<%=server._id%>', product : '<%=server.product%>', unitPrice : '<%=server.price%>'})
+    <% }); %>
+    let str = '';
+    arr.forEach(function(server){
+        str = str +
+        `
+        <tr>
+            <td>
+                <select class="form-control product" name="serverProduct">
+                    <option value="${server._id}" selected>${server.product}</option>
+                    <% serverList.forEach(function(server){ %>
+                        <option value="<%=server._id%>"><%=server.product%></option>
+                    <% }) %>
+                </select>
+            </td>
+            <td><input class="form-control unit" type="text" name="serverUnit" value="1"></td>
+                <td><input class="form-control unitPrice" type="text" name="serverUnitPrice" numberOnly value=${server.unitPrice}></td>
+                <td><input class="form-control amount" type="text" readonly numberOnly value="${server.unitPrice}"></td>
+                <td>서버</td>
+                <td><div class="btn btn-success svshipEach" disabled>출고전</div></td>
+                <td><a class="remove" style="text-decoration: none;"><i class="fas fa-trash-alt"></i></a>
+                    <input type="hidden" name="svShip" value=false>    
+            </td>
+        </tr>
+        `
+    });
+    const obj = {};
+    obj.product = $(this).val();
+    if(obj.product == 1){
+        that.closest('tr').remove();
+        $('#list').after(`
+            ${str}
+        `)
+    } else {
+        $.ajax({
+            data: obj,
+            dataType : 'json',
+            type : 'POST',
+            url : '/table/server/product/unitPrice'
+        })
+        .done(function(args){
+            that.closest('tr').children('td').eq(2).children('input').val(args.unitPrice);
+        })
+        .fail(function(err){
+            if(err) console.error(err);
+        })
+    }
+});
+
+ $(document).on('focusout', '.onepass', function(){
+      const that = $(this);
+      const product = $(this).val();
+      const obj = {};
+      obj.product = product;
+      $.ajax({
+          data : obj,
+          dataType : 'json',
+          type : 'POST',
+          url : '/table/onepass/prodcuct/search',
+      })
+      .done(function(args){
+        const conf = that.closest('tr').next('tr').attr('conf');
+        if(args.searchList.length === 0){
+            alert('그런 이름의 상품은 존재하지 않습니다.');
+            if(conf == 'true'){
+                that.closest('tr').next('tr').remove();
+            }
+            that.val('');
+            return false;
+        } else {
+            let data = '';
+            if(conf == 'true'){
+                that.closest('tr').next('tr').remove();
+            }
+            `${args.searchList.forEach(function(list){
+                data = data+'<a style="margin-right : 1%; font-size : 70%;"class="btn btn-default selected" product="'+list._id+'" price="'+list.price+'">'+list.product+'</a>'
+            })}`
+              that.closest('tr').after(
+                  `<tr conf="true">
+                        <td colspan=7>
+                            ${data}
+                        </td>
+                    </tr>
+                    `
+             );
+        }
+      })
+  });
+
+    $(document).on('click', '.selected', function(){
+      const that = $(this);
+      const product = $(this).text();
+      const unit = $(this).closest('tr').prev('tr').children('td').eq(1).children('input[name="onepassUnit"]').val();
+      that.closest('tr').prev('tr').children('td').eq(0).children('.onepass').val(product);
+      that.closest('tr').prev('tr').children('td').eq(0).children('input[name="onepassProduct"]').val(that.attr('product'));
+      that.closest('tr').prev('tr').children('td').eq(2).children('input[name="onepassUnitPrice"]').val(that.attr('price'));
+      that.closest('tr').prev('tr').children('td').eq(3).children('.amount').val(parseInt(that.attr('price'))*parseInt(unit));
+      that.closest('tr').remove();
+  });
+
+   $(document).on('focusout', '.server', function(){
+      const that = $(this);
+      const product = $(this).val();
+      const obj = {};
+      obj.product = product;
+      $.ajax({
+          data : obj,
+          dataType : 'json',
+          type : 'POST',
+          url : '/table/server/prodcuct/search',
+      })
+      .done(function(args){
+        const conf = that.closest('tr').next('tr').attr('conf');
+        if(args.searchList.length === 0){
+            alert('그런 이름의 상품은 존재하지 않습니다.');
+            if(conf == 'true'){
+                that.closest('tr').next('tr').remove();
+            }
+            that.val('');
+            return false;
+        } else {
+            let data = '';
+            if(conf == 'true'){
+                that.closest('tr').next('tr').remove();
+            }
+            `${args.searchList.forEach(function(list){
+                data = data+'<a style="margin-right : 1%; font-size : 70%;"class="btn btn-default chosen" product="'+list._id+'" price="'+list.price+'">'+list.product+'</a>'
+            })}`
+              that.closest('tr').after(
+                  `<tr conf="true">
+                        <td colspan=7>
+                            ${data}
+                        </td>
+                    </tr>
+                    `
+             );
+        }
+      })
+  });
+
+    $(document).on('click', '.chosen', function(){
+      const that = $(this);
+      const product = $(this).text();
+      const unit = $(this).closest('tr').prev('tr').children('td').eq(1).children('input[name="serverUnit"]').val();
+      that.closest('tr').prev('tr').children('td').eq(0).children('.server').val(product);
+      that.closest('tr').prev('tr').children('td').eq(0).children('input[name="serverProduct"]').val(that.attr('product'));
+      that.closest('tr').prev('tr').children('td').eq(2).children('input[name="serverUnitPrice"]').val(that.attr('price'));
+      that.closest('tr').prev('tr').children('td').eq(3).children('.amount').val(parseInt(that.attr('price'))*parseInt(unit));
+      that.closest('tr').remove();
+  });
+
+
+  $(document).on('click', '.remove', function(){
+      const rows = $('.product').length;
+      if(rows == 0 ||rows == 1){
+          const flag = confirm('마지막 상품을 삭제할 경우 프로젝트 전체가 삭제될 수 있습니다');
+          if(flag === true){
+              window.location.href = '/table/summary';
+          } else {
+              return false;
+          }
+      } else {
+          $(this).closest('tr').remove();
+      }
+  });
+
+  $(document).on('change', 'input[name="onepassUnit"]', function(){
+      const unit = $(this).val();
+      const unitPrice =$(this).closest('tr').children('td').eq(2).children('input[name="onepassUnitPrice"]').val();
+      $(this).closest('tr').children('td').eq(3).children('.amount').val(parseInt(unit)*parseInt(unitPrice));
+  });
+
+  $(document).on('change', 'input[name="onepassUnitPrice"]', function(){
+      const unit = $(this).val();
+      const unitPrice =$(this).closest('tr').children('td').eq(1).children('input[name="onepassUnit"]').val();
+      $(this).closest('tr').children('td').eq(3).children('.amount').val(parseInt(unit)*parseInt(unitPrice));
+  });
+
+  $(document).on('change', 'input[name="serverUnit"]', function(){
+      const unit = $(this).val();
+      const unitPrice =$(this).closest('tr').children('td').eq(2).children('input[name="serverUnitPrice"]').val();
+      $(this).closest('tr').children('td').eq(3).children('.amount').val(parseInt(unit)*parseInt(unitPrice));
+  });
+
+  $(document).on('change', 'input[name="serverUnitPrice"]', function(){
+      const unit = $(this).val();
+      const unitPrice =$(this).closest('tr').children('td').eq(1).children('input[name="serverUnit"]').val();
+      $(this).closest('tr').children('td').eq(3).children('.amount').val(parseInt(unit)*parseInt(unitPrice));
+  });
+
+  $(document).on('click', '.checked', function(){
+    const that = $(this);
+    const obj = {};
+    let count = parseInt($('#count').text())
+    obj.subject = $(this).attr('subject');
+    obj.serial = $(this).attr('serial');
+    $.ajax({
+        data: obj,
+        dataType : 'json',
+        type : 'POST',
+        url : '/table/server/file/receive/cancel'
+    })
+    .done(function(){
+        that.attr('class', 'btn btn-default unchecked').text('미수령');
+        that.attr('value', false);
+        $('#count').text(count-1);
+    })
+    .fail(function(err){
+        console.error(err);
+    });
+  });
+
+    $(document).on("keyup", "input:text[numberOnly]", function() {
+        $(this).val($(this).val().replace(/[^0-9]/g,""));
+    });
+
+</script>
+
+<% include ../footer.ejs %>

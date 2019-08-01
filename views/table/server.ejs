@@ -1,0 +1,550 @@
+<% include ../header.ejs %>
+<% include ../navibar.ejs %>
+
+<div>
+<div class="col-sm-12">
+    <table class="table table-borderless">
+        <tr>
+            <td class="col-sm-10"><h1>
+                서버 납품 현황
+            </h1></td>
+            <td class="col-sm-2">
+                <a id="add" style="text-decoration:  none; cursor : pointer; color : grey"><h3>추가</h3></a>
+            </td>
+        </tr>
+    </table>
+</div>
+  <table class="table table-borderless table-striped" id="status">
+        <colgroup>
+            <col width="13%"/>
+            <col width="10%"/>
+            <col width="8%"/>
+            <col width="30%"/>
+            <col width="21%"/>
+            <col width="4%"/>
+            <col width="4%"/>
+        </colgroup>
+      <tr id="title" style="background-color: grey">
+          <th>납품현장</th>
+          <th>발주업체</th>
+          <th>장비납품일</th>
+          <th>납품건</th>
+          <th>비고</th>
+          <th>수정</th>
+          <th>출하</th>
+        </tr>
+        <% stats.forEach(function(stat){%>
+            <tr serial="<%=stat.serial%>" manager="<%=stat.manager%>">
+                <td><input class="form-control subject" type="text" style="font-size: 70%; cursor : pointer;" readonly value="<%=stat.subject%>" style="cursor : pointer;"></td>
+                <td><select style="font-size : 70%;" class="form-control" name="" disabled>
+                    <option value="<%=stat.customer%>" selected><%=stat.customer%></option>
+                    <% customerList.forEach(function(customer){%>
+                        <option value="<%=customer.name%>"><%=customer.name%></option>
+                        <% }); %>
+                    </select></td>
+                    <td><input  style="font-size : 80%;" class="form-control datepicker" type="text" readonly value="<%=stat.getDate%>"></td>
+                    <% if(stat.server.length === 0) {%>
+                        <td>
+                            <button class="btn btn-default new" style="width : 100%;" disabled>추가하기</button>
+                        </td>
+                        <% } else { %>
+                            <td>
+                                <table class="detail">
+                                    <colgroup>
+                                        <col width="30%"/>
+                                        <col width="15%"/>
+                                        <col width="23%"/>
+                                        <col item-width="0%">
+                                        <col width="7%"/>
+                                        <col width="7%"/>
+                                      </colgroup>
+                                    <% stat.server.forEach(function(data){ %>
+                                        <tr style="border-bottom: 5px transparent solid;">
+                                            <td><select style="font-size : 70%;" class="form-control" name="product" disabled>
+                                                <option value="<%=data.product._id%>" selected><%=data.product.product%></option>>
+                                                <% storageList.forEach(function(storage){%>
+                                                    <option value="<%=storage._id%>"><%=storage.product%></option>
+                                                    <% }); %>
+                                                </select></td>
+                                                <td><input class="form-control" name="unit" type="text" readonly value="<%=data.unit%>"></td>
+                                                <td><input class="form-control" name="unitPrice" type="text" readonly value="<%=data.unitPrice%>">
+                                                </td>                 
+                                                <td>
+                                                    <input type="hidden" name="ship" value="<%=data.ship%>">
+                                                </td>               
+                                                <td><button class="btn btn-default add" disabled>추가</button></td>
+                                                <td><button class="btn btn-danger delete" disabled id="<%=data._id%>" ship="<%=data.ship%>">삭제</button></td>
+                                            </tr>
+                                            <% }); %>
+                                        </table>
+                                    </td>
+                                    <% } %>
+                    <td>
+                        <% if(stat.parking.use === true){ %>
+                            <button class="btn btn-warning checked" value=true disabled>주차</button>
+                        <% } else { %>
+                            <button class="btn btn-default unchecked" value=false disabled>주차</button>
+                        <% } %>
+                        <% if(stat.ev.use === true){ %>
+                            <button class="btn btn-warning checked" value=true disabled>E/V</button>
+                        <% } else { %>
+                            <button class="btn btn-default unchecked" value=false disabled>E/V</button>
+                        <% } %>
+                        <% if(stat.cctv.use === true){ %>
+                            <button class="btn btn-warning checked" value=true disabled>CCTV</button>
+                        <% } else { %>
+                            <button class="btn btn-default unchecked" value=false disabled>CCTV</button>
+                        <% } %>
+                        <% if(stat.em.use === true){ %>
+                            <button class="btn btn-warning checked" value=true disabled>비상호출</button>
+                        <% } else { %>
+                            <button class="btn btn-default unchecked" value=false disabled>비상호출</button>
+                        <% } %>
+                        <% if(stat.op.use === true){ %>
+                            <button class="btn btn-warning checked" value=true disabled>원패스</button>
+                        <% } else { %>
+                            <button class="btn btn-default unchecked" value=false disabled>원패스</button>
+                        <% } %>
+                        <% if(stat.hn.use === true){ %>
+                            <button class="btn btn-warning checked" value=true disabled>홈넷</button>
+                        <% } else { %>
+                            <button class="btn btn-default unchecked" value=false disabled>홈넷</button>
+                        <% } %>
+                    </td>
+                    <td>
+                        <button class="btn btn-info edit">수정</button>
+                    </td>
+                    <td>
+                        <button class="btn btn-success shipment">출하</button>
+                    </td>
+                </tr>
+            <%})%>
+            </table>
+            <div class="col-sm-12" style="text-align : center;">
+                    <ul>
+                      <%
+                        var offset = 3;
+                        var partialQuery;
+                        if(urlQuery) partialQuery = urlQuery.replace(/&page=(.*?)(&|$)/ig,"");
+                      %>
+                      <% for(i=1;i<=maxPage;i++){ %>
+                        <% if(i<=offset || i>maxPage-offset || (i>=page-(offset-1) && i<=page+(offset-1))){ %>
+                          <% if(i != page){ %>
+                            <li style="display : inline-block;"><a href="/table/server?<%=partialQuery%>&page=<%= i %>">[ <%= i %> ]</a></li>
+                            <% } else { %>
+                              <li style="display : inline-block;">[ <b><%= i %></b> ]</li>
+                              <% } %>
+                            <% } else if(i == offset+1 || i == maxPage-offset){ %>
+                              <li style="display : inline-block;">...</li>
+                            <% } %>
+                          <%}%>
+                    </ul>
+                  </div>
+                  <form class="col-sm-12" action="" id="search">
+                      <table class="table">
+                        <tr>
+                          <td class=col-sm-3>
+                            <select class="form-control" name="searchType">
+                              <% var select %>
+                              <option value="subject"
+                              <%= search.searchType=="subject"?select="selected":"" %>>프로젝트명</option>
+                              <option value="customer"
+                              <%= search.searchType=="customer"?select="selected":"" %>>고객명</option>
+                            </select>
+                          </td>
+                          <td class="col-sm-7">
+                            <input class="form-control" type="text" name="searchText" value="<%= select?search.searchText:"" %>">
+                          </td>
+                          <td class="col-sm-2">
+                            <button class="btn btn-default" type="submit" style="width : 100%;">search</button>
+                          </td>
+                        </tr>
+                      </table>
+                    </form>
+        </div>
+        
+        <script>
+  $(document).on('focus', '.datepicker', function(){
+    $(this).datepicker({
+    dateFormat: 'yy-mm-dd'
+     });
+  })
+
+  $(document).on('click', '.edit', function(){
+      const rows = $(this).closest('tr').children('td').eq(3).children('table').children('tbody').children('tr').length;
+      $(this).closest('tr').children('td').eq(0).children('input').attr('class', 'form-control');
+      $(this).closest('tr').children('td').eq(0).children('input').attr('readonly', false);
+      $(this).closest('tr').children('td').eq(1).children('select').attr('disabled', false);
+      $(this).closest('tr').children('td').eq(2).children('input').attr('readonly', false);
+      for(i=0;i<rows;i++){
+          if($(this).closest('tr').children('td').eq(3).children('table').children('tbody').children('tr').children('td').children('input[name="ship"]').eq(i).val() == 'false'){
+            $(this).closest('tr').children('td').eq(3).children('table').children('tbody').children('tr').eq(i).children('td').children('select').attr('disabled', false);
+            $(this).closest('tr').children('td').eq(3).children('table').children('tbody').children('tr').eq(i).children('td').children('input').attr('readonly', false);
+
+         }
+      }
+      $(this).closest('tr').children('td').eq(3).children('table').children('tbody').children('tr').children('td').children('button').attr('disabled', false);
+      $(this).closest('tr').children('td').eq(4).children('input').attr('readonly', false);
+      $(this).closest('tr').children('td').eq(3).children('button').attr('disabled', false);
+      $(this).closest('tr').children('td').eq(4).children('button').eq(0).attr('disabled', false);
+      $(this).closest('tr').children('td').eq(4).children('button').eq(1).attr('disabled', false);
+      $(this).closest('tr').children('td').eq(4).children('button').eq(2).attr('disabled', false);
+      $(this).closest('tr').children('td').eq(4).children('button').eq(3).attr('disabled', false);
+      $(this).closest('tr').children('td').eq(4).children('button').eq(4).attr('disabled', false);
+      $(this).closest('tr').children('td').eq(4).children('button').eq(5).attr('disabled', false);
+      $(this).attr('class', 'btn btn-primary confirm');
+      $(this).html('확인');
+  });
+
+  $(document).on('click', '.add', function(){
+      $(this).closest('tr').closest('table').children('tbody:last').append(
+          `
+            <tr style="border-bottom: 10px transparent solid;">
+                <td><select style="font-size : 70%;" class="form-control" name="product">
+                    <option value="" disabled hidden selected></option>
+                        <% storageList.forEach(function(storage){%>
+                          <option value="<%=storage._id%>"><%=storage.product%></option>
+                        <% }); %>
+                    </select></td>
+                      <td><input class="form-control" name="unit" type="text"></td>
+                      <td><input class="form-control" name="unitPrice" type="text"></td>
+                      <td><input type="hidden" name="ship" value="false"></td>
+                      <td><button class="btn btn-default add">추가</button></td>
+                      <td><button class="btn btn-danger delete">삭제</button></td>
+            </tr>
+          `
+      );
+  });
+
+    $(document).on('click', '.new', function(){
+      $(this).closest('td').html(
+          `
+          <table class="detail">
+            <colgroup>
+                <col width="30%"/>
+                <col width="15%"/>
+                <col width="23%"/>
+                <col width="7%"/>
+                <col width="7%"/>
+                </colgroup>
+            <tr style="border-bottom: 10px transparent solid;">
+                <td><select style="font-size : 70%;" class="form-control newSelect" name="product">
+                    <option value="" disabled hidden selected></option>
+                        <% storageList.forEach(function(storage){%>
+                          <option value="<%=storage._id%>"><%=storage.product%></option>
+                        <% }); %>
+                    </select></td>
+                      <td><input class="form-control" name="unit" type="text"></td>
+                      <td><input class="form-control" name="unitPrice" type="text"></td>
+                      <td><input type="hidden" name="ship" value="false"></td>
+                      <td><button class="btn btn-default add">추가</button></td>
+                      <td><button class="btn btn-danger cancel">삭제</button></td>
+            </tr>
+        </table>
+          `
+      );
+  });
+
+  $(document).on('click', '#add', function(){
+      const serial = Date.now();
+      $('#title').after(`
+      <tr serial="${serial}">
+          <td><input class="form-control" type="text"></td>
+          <td><select style="font-size : 70%;" class="form-control" name="">
+            <option value="" disabled hidden selected></option>
+              <% customerList.forEach(function(customer){%>
+                <option value="<%=customer.name%>"><%=customer.name%></option>
+              <% }); %>
+          </select></td>
+          <td><input  style="font-size : 80%;" class="form-control datepicker" type="text"></td>
+          <td>
+              <table class="detail" style="border-bottom: 5px transparent solid;">
+              <colgroup>
+                <col width="30%"/>
+                <col width="15%"/>
+                <col width="23%"/>
+                <col width="7%"/>
+                <col width="7%"/>
+                </colgroup>
+              </colgroup>
+                  <tr>
+                    <td><select style="font-size : 70%;" class="form-control" name="product">
+                        <option value="" disabled selected>
+                        <% storageList.forEach(function(storage){%>
+                          <option value="<%=storage._id%>"><%=storage.product%></option>
+                        <% }); %>
+                    </select></td>
+                      <td><input class="form-control" name="unit" type="text"></td>
+                      <td><input class="form-control" name="unitPrice" type="text"></td>
+                      <td><input type="hidden" name="ship" value="false"></td>
+                      <td><button class="btn btn-default add">추가</button></td>
+                      <td><button class="btn btn-danger delete">삭제</button></td>
+                  </tr>
+              </table>
+          </td>
+          <td>
+            <button class="btn btn-default unchecked" value=false >주차</button>
+            <button class="btn btn-default unchecked" value=false >E/V</button>
+            <button class="btn btn-default unchecked" value=false >CCTV</button>
+            <button class="btn btn-default unchecked" value=false >비상호출</button>
+            <button class="btn btn-default unchecked" value=false >원패스</button>
+            <button class="btn btn-default unchecked" value=false >홈넷</button>
+          </td>
+          <td><button class="btn btn-primary submit">제출</button></td>
+          <td><button class="btn btn-success submit" disabled>출하</button></td>
+      </tr>
+      `)
+  });
+
+  $(document).on('click', '.cancel', function(){
+    const data = $(this);
+        let rows = $(this).closest('tbody').children('tr').length;
+        const name = data.closest('tr').children('td').eq(0).children('select').val();
+        if(data.closest('tr').children('td').eq(0).children('select').val() === null && rows != 1){
+            data.closest('tr').remove();
+        } else if(rows === 1){
+            data.closest('table').parent('td').html(
+                `<button class="btn btn-default new" style="width : 100%;">추가하기</button>`
+            )
+        }
+  });
+
+  $(document).on('click', '.delete', function(){
+        const data = $(this);
+        let rows = $(this).closest('tbody').children('tr').length;
+        if($(this).closest('tr').children('td').eq(0).children('input[name="product"]').val() === ''){
+            if(rows != 1){
+                $(this).closest('tr').remove();
+            } else if(rows === 1){
+                $(this).closest('table').closest('tr').remove();
+            }
+        } else {
+            const obj = {};
+            obj.product = $(this).closest('tr').children('td').eq(0).children('select').val();
+            obj.serial = $(this).closest('table').closest('tr').attr('serial');
+            obj._id = $(this).attr('id');
+            obj.unit = $(this).closest('tr').children('td').eq(1).children('input[name="unit"]').val();
+            obj.ship = $(this).attr('ship');
+            obj.type = 1;
+            $.ajax({
+                url : '/table/detail/drop/server',
+                type : 'POST',
+                data : obj,
+                dataType : 'json',
+            })
+            .done(function(args){
+                if(args.message == 1 && rows === 1){
+                    data.closest('table').parent('td').html(
+                            `
+                                <button class="btn btn-default new" style="width : 100%;">추가하기</button>
+                            `
+                        )
+                } else if(args.message == 1 && rows != 1){
+                    data.closest('tr').remove();
+                } else {
+                    alert('물품이 모두 삭제되어 해당 프로젝트가 삭제됩니다');
+                    data.closest('table').closest('tr').remove();
+                }
+            })
+            .fail(function(err){
+                if(err) console.error(err);
+            });
+        }
+    });
+
+  $(document).on('click', '.submit', function(){
+      const obj = {};
+      obj.serial = $(this).closest('tr').attr('serial');
+      obj.subject = $(this).closest('tr').children('td').eq(0).children('input').val();
+      obj.customer = $(this).closest('tr').children('td').eq(1).children('select').val();
+      obj.date = $(this).closest('tr').children('td').eq(2).children('input').val();
+      let pdt = $(this).closest('tr').children('td').eq(3).children('table').children('tbody').children('tr').children('td').children("select[name='product']");
+      let ut = $(this).closest('tr').children('td').eq(3).children('table').children('tbody').children('tr').children('td').children("input[name='unit']");
+      let utp = $(this).closest('tr').children('td').eq(3).children('table').children('tbody').children('tr').children('td').children("input[name='unitPrice']");
+      const data = []
+      obj.parking = $(this).closest('tr').children('td').eq(4).children('button').eq(0).attr('value');
+      obj.ev = $(this).closest('tr').children('td').eq(4).children('button').eq(1).attr('value');
+      obj.cctv = $(this).closest('tr').children('td').eq(4).children('button').eq(2).attr('value');
+      obj.em = $(this).closest('tr').children('td').eq(4).children('button').eq(3).attr('value');
+      obj.op = $(this).closest('tr').children('td').eq(4).children('button').eq(4).attr('value');
+      obj.hn = $(this).closest('tr').children('td').eq(4).children('button').eq(5).attr('value');
+      console.log(obj);
+      if(obj.serial === "" || obj.subject === "" || obj.customer === ""){
+          alert('필수값을 모두 채워주세요');
+          return false;
+      }
+      for(i=0;i<pdt.length;i++){
+        data[i] = {product : pdt[i].value, unit : ut[i].value, unitPrice : utp[i].value}
+        if(!pdt[i].value || !ut[i].value || !utp[i].value){
+            alert('필수값을 모두 채워주세요');
+            return false;
+        }
+      }
+      obj.data = JSON.stringify(data);
+      $.ajax({
+          data : obj,
+                url : '/table/regist/server',
+                type : 'POST',
+                dataType : 'json'
+      })
+      .done(function(args){
+         if(args.message === 1){
+            window.location.href = '/table/server'
+         }
+      })
+      .fail(function(err){
+          if (err) console.error(err);
+          throw err;
+      })
+  });
+
+    $(document).on('click', '.confirm', function(){
+      const obj = {};
+      obj.conf = 0;
+      const flag = confirm('고객의 요청에 의한 변경입니까?');
+      if(flag === true){
+          obj.conf = 1;
+      }
+      obj.serial = $(this).closest('tr').attr('serial');
+      obj.subject = $(this).closest('tr').children('td').eq(0).children('input').val();
+      obj.customer = $(this).closest('tr').children('td').eq(1).children('select').val();
+      obj.date = $(this).closest('tr').children('td').eq(2).children('input').val();
+      obj.parking = $(this).closest('tr').children('td').eq(4).children('button').eq(0).attr('value');
+      obj.ev = $(this).closest('tr').children('td').eq(4).children('button').eq(1).attr('value');
+      obj.cctv = $(this).closest('tr').children('td').eq(4).children('button').eq(2).attr('value');
+      obj.em = $(this).closest('tr').children('td').eq(4).children('button').eq(3).attr('value');
+      obj.op = $(this).closest('tr').children('td').eq(4).children('button').eq(4).attr('value');
+      obj.hn = $(this).closest('tr').children('td').eq(4).children('button').eq(5).attr('value');
+      let pdt = $(this).closest('tr').children('td').eq(3).children('table').children('tbody').children('tr').children('td').children("select[name='product']");
+      let ut = $(this).closest('tr').children('td').eq(3).children('table').children('tbody').children('tr').children('td').children("input[name='unit']");
+      let utp = $(this).closest('tr').children('td').eq(3).children('table').children('tbody').children('tr').children('td').children("input[name='unitPrice']");
+      let ship =  $(this).closest('tr').children('td').eq(3).children('table').children('tbody').children('tr').children('td').children("input[name='ship']");
+      const data = [];
+      if(obj.serial === "" || obj.subject === "" || obj.customer === ""){
+          alert('필수값을 모두 채워주세요');
+          return false;
+      }
+      for(i=0;i<pdt.length;i++){
+        data[i] = {product : pdt[i].value, unit : ut[i].value, unitPrice : utp[i].value, ship : ship[i].value};
+        if(!pdt[i].value || !ut[i].value || !utp[i].value){
+            alert('필수값을 모두 채워주세요');
+            return false;
+        }
+      }
+      obj.data = JSON.stringify(data);
+      obj.parking = $(this).closest('tr').children('td').eq(4).children('button').eq(0).attr('value');
+      obj.ev = $(this).closest('tr').children('td').eq(4).children('button').eq(1).attr('value');
+      obj.cctv = $(this).closest('tr').children('td').eq(4).children('button').eq(2).attr('value');
+      $.ajax({
+          data : obj,
+                url : '/table/edit/confirm/server',
+                type : 'POST',
+                dataType : 'json'
+      })
+      .done(function(args){
+         if(args.message === 1){
+            window.location.href = '/table/server'
+         }
+      })
+      .fail(function(err){
+          if (err) console.error(err);
+          throw err;
+      })
+  });
+
+  $(document).on('click', '.unchecked', function(){
+     $(this).attr('class', 'btn btn-warning checked');
+     $(this).attr('value', true)
+  });
+
+  $(document).on('click', '.checked', function(){
+     $(this).attr('class', 'btn btn-default unchecked');
+     $(this).attr('value', false);
+  });
+
+  $(document).on('click', '.shipment', function(){
+    const conf = '<%=userData%>'
+    if(!conf){
+        alert('다시 로그인 해주세요');
+        window.locaiton.href = '/';
+        return false;
+    } else {
+        const tr = $(this).closest('tr');
+        const obj = {};
+          obj.serial = $(this).closest('tr').attr('serial');
+          obj.manager = $(this).closest('tr').attr('manager');
+          obj.subject = $(this).closest('tr').children('td').eq(0).children('input').val();
+          obj.customer = $(this).closest('tr').children('td').eq(1).children('select').val();
+          obj.date = $(this).closest('tr').children('td').eq(2).children('input').val();
+          let pdt = $(this).closest('tr').children('td').eq(3).children('table').children('tbody').children('tr').children('td').children("select[name='product']");
+          let ut = $(this).closest('tr').children('td').eq(3).children('table').children('tbody').children('tr').children('td').children("input[name='unit']");
+          let utp = $(this).closest('tr').children('td').eq(3).children('table').children('tbody').children('tr').children('td').children("input[name='unitPrice']");
+          const data = []
+          for(i=0;i<pdt.length;i++){
+            data[i] = {product : pdt[i].value, unit : ut[i].value, unitPrice : utp[i].value}
+          }
+          obj.data = JSON.stringify(data);
+          obj.remarks = $(this).closest('tr').children('td').eq(4).children('input').val();
+          console.log(obj)
+          $.ajax({
+              data : obj,
+              dataType : 'json',
+              type : 'POST',
+              url : '/table/shipment/server',
+          })
+          .done(function(args){
+          })
+          .fail(function(err){
+              if(err) console.error(err);
+          })
+    }
+  });
+
+  $(document).on('click', '.remove', function(){
+      const tr = $(this).closest('tr');
+      const obj = {};
+      obj.serial = $(this).closest('tr').attr('serial');
+      $.ajax({
+          data: obj,
+          dataType : 'json',
+          type : 'POST',
+          url : '/table/server/delete'
+      })
+      .done(function(args){
+          if(args.message == 1){
+              tr.remove();
+          }
+      })
+      .fail(function(err){
+          if(err) console.error(err);
+          throw err
+      })
+  });
+
+  $(document).on('click', '.subject', function(){
+      const serial = $(this).closest('tr').attr('serial');
+      window.location.href = '/table/schedule/subject/'+serial
+  });
+
+
+  $(document).on('change', 'select[name="product"]', function(){
+      const that = $(this).closest('tr');
+      const obj = {};
+      obj.product = $(this).val();
+      $.ajax({
+          data : obj,
+          dataType : 'json',
+          url : '/table/product/price',
+          type : 'POST'
+      })
+      .done(function(args){
+          that.children('td').eq(2).children('input').val(args.price);
+      })
+      .fail(function(err){
+          console.error(err);
+      });
+  });
+
+</script>
+
+<% include ../footer.ejs %>

@@ -1,0 +1,193 @@
+<% include ../../header.ejs %>
+<% include ../../navibar.ejs %>
+
+<div class="col-sm-offset-1 col-sm-10">
+    <h1>판매 로그</h1>
+    <table class="table table-borderless table-striped">
+        <tr>
+            <th>프로젝트명</th>
+            <th>제품명</th>
+            <th>고객명</th>
+            <th>담당자명</th>
+            <th>수량</th>
+            <th>단가</th>
+            <th>출고일</th>
+            <th>출고</th>
+            <th>수정</th>
+            <th>삭제</th>
+        </tr>
+        <% salesLog.forEach(function(sales){ %>
+            <tr serial="<%=sales.serial%>" id="<%=sales.id%>">
+                <td><%=sales.subject%></td>
+                <td><%=sales.product.product%></td>
+                <td><%=sales.customer%></td>
+                <td><%=sales.manager%></td>
+                <td><%=sales.set%></td>
+                <td><%=sales.unitPrice%></td>
+                <td>
+                  <%=sales.shipdate%>
+                </td>
+                <td>
+                    <%if(sales.status === 0){%>
+                    <button class="btn btn-success shipping" id="<%=sales.item_id%>" type="<%=sales.type%>">출고</button>
+                    <%} else {%>
+                      <button class="btn btn-secondary cancel" id="<%=sales.item_id%>" type="<%=sales.type%>">출고취소</button>
+                      <% } %>
+                </td>
+                <td>
+                    <button class="btn btn-primary" onclick="location.href='/sales/edit/<%=sales.id%>'">수정</button>
+                </td>
+                <td>
+                    <button class="btn btn-danger delete" id="<%=sales.item_id%>" type="<%=sales.type%>">삭제</button>
+                </td>
+            </tr>
+        <% }) %>
+    </table>
+    <div class="" style="text-align : center;">
+        <ul>
+          <%
+            var offset = 3;
+            var partialQuery;
+            if(urlQuery) partialQuery = urlQuery.replace(/&page=(.*?)(&|$)/ig,"");
+          %>
+          <% for(i=1;i<=maxPage;i++){ %>
+            <% if(i<=offset || i>maxPage-offset || (i>=page-(offset-1) && i<=page+(offset-1))){ %>
+              <% if(i != page){ %>
+                <li style="display : inline-block;"><a href="/sales/home?<%=partialQuery%>&page=<%= i %>">[ <%= i %> ]</a></li>
+                <% } else { %>
+                  <li style="display : inline-block;">[ <b><%= i %></b> ]</li>
+                  <% } %>
+                <% } else if(i == offset+1 || i == maxPage-offset){ %>
+                  <li style="display : inline-block;">...</li>
+                <% } %>
+              <%}%>
+        </ul>
+      </div>
+      <form class="col-sm-12" action="" id="search">
+          <table class="table">
+            <tr>
+              <td class=col-sm-3>
+                <select class="form-control" name="searchType">
+                  <% var select %>
+                  <option value="subject"
+                  <%= search.searchType=="subject"?select="selected":"" %>>프로젝트명</option>
+                  <option value="product"
+                  <%= search.searchType=="product"?select="selected":"" %>>제품명</option>
+                  <option value="customer"
+                  <%= search.searchType=="customer"?select="selected":"" %>>회사명</option>
+                </select>
+              </td>
+              <td class="col-sm-7">
+                <input class="form-control" type="text" name="searchText" value="<%= select?search.searchText:"" %>">
+              </td>
+              <td class="col-sm-2">
+                <button class="btn btn-default" type="submit" style="width : 100%;">search</button>
+              </td>
+            </tr>
+          </table>
+        </form>
+</div>
+
+<script>
+  
+    $(document).on('click', '.shipping', function(){
+      const that = $(this).closest('tr');
+      const td = $(this).closest('tr').children('td');
+      const obj = {};
+      obj.serial = $(this).closest('tr').attr('serial');
+      obj._id = $(this).attr('id');
+      obj.product = $(this).closest('tr').children('td').eq(1).text();
+      obj.unit = $(this).closest('tr').children('td').eq(4).text();
+      obj.unitPrice = $(this).closest('tr').children('td').eq(5).text();
+      obj.type = $(this).attr('type');
+      const flag = confirm('정말 출고 되었습니까?');
+      if(flag === true ){
+        $.ajax({
+          type : 'POST',
+          url : '/sales/shipping',
+          data : obj,
+          dataType : 'json'
+        })
+        .done(function(args){
+          if(args.message === 0){
+            td.eq(7).children('button').attr('class', 'btn btn-secondary cancel').text('출고취소');
+          }
+        })
+        .fail(function(err){
+          if(err) {
+            console.error(err)
+          }
+        }); 
+      } else {
+        return false;
+      }
+    });
+    $(document).on('click', '.cancel', function(){
+      const that = $(this);
+      const td = $(this).closest('tr').children('td');
+      const obj = {};
+      obj.serial = $(this).closest('tr').attr('serial');
+      obj._id = $(this).attr('id');
+      obj.product = $(this).closest('tr').children('td').eq(1).text();
+      obj.unit = $(this).closest('tr').children('td').eq(4).text();
+      obj.unitPrice = $(this).closest('tr').children('td').eq(5).text();
+      obj.type = $(this).attr('type');
+      const flag = confirm('정말 출고 취소하시겠습니까?');
+      if(flag === true ){
+        $.ajax({
+          type : 'POST',
+          url : '/sales/shipping/cancel',
+          data : obj,
+          dataType : 'json'
+        })
+        .done(function(args){
+          if(args.message === 0){
+            td.eq(6).text(args.shipping);
+            td.eq(7).children('button').attr('class', 'btn btn-success shipping').text('출고');
+          } else {
+            that.closest('tr').remove();
+          }
+        })
+        .fail(function(err){
+          if(err) {
+            console.error(err)
+          }
+        }); 
+      } else {
+        return false;
+      }
+    });
+    
+    $(document).on('click', '.delete', function(){
+      const tr = $(this).closest('tr');
+      const id = $(this).attr('id');
+      const flag = confirm('정말로 삭제하시겠습니까?');
+      if(flag === true){
+        const obj = {};
+        obj.serial = $(this).closest('tr').attr('serial');
+        obj.id = $(this).closest('tr').attr('id');
+        obj._id = $(this).attr('id');
+        obj.type = $(this).attr('type');
+        obj.product = tr.children('td').eq(1).text();
+        obj.unit = tr.children('td').eq(4).text();
+        $.ajax({
+          data : obj,
+          dataType : 'json',
+          type : 'POST',
+          url : '/sales/delete',
+        })
+        .done(function(args){
+          if(args.message == 1){
+            tr.remove();
+          };
+        })
+        .fail(function(err){
+          if(err) console.error(err);
+        });
+      } else {
+        return false;
+      }
+    });
+  </script>
+
+<% include ../../footer.ejs %>

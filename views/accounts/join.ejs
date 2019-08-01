@@ -1,0 +1,138 @@
+<% include ../header %>
+
+<div class="col-sm-offset-2 col-sm-8">
+    <form class="form-group" method="POST" action="">
+        <table class="table table-borderless">
+            <tr>
+                <th class="col-sm-3">아이디</th>
+                <td class="col-sm-9"><input class="form-control" type="text" name="username" value=""></td>
+            </tr>
+            <tr>
+                <td colspan="2" id="idconf"></td>
+            </tr>
+            <tr>
+                <th>비밀번호</th>
+                <td><input class="form-control" type="password" name="password" id="password" value=""></td>
+            </tr>
+            <tr>
+                <th>비밀번호 확인</th>
+                <td><input class="form-control" type="password" id="passwordconf"></td>
+            </tr>
+            <tr>
+                <td colspan="2" id="pwdconf"></td>
+            </tr>
+            <tr>
+                <th>이름</th>
+                <td><input class="form-control" name="name" id="name" type="text"></td>
+            </tr>
+            <tr>
+                <th>주소</th>
+                <td><input class="form-control" type="text" readonly onclick="setDaumPostcode()" id="addr" name="addr" value="경기도 성남시 분당구 대왕판교로 644번길 49 (코리아벤처타운)"></td>
+            </tr>
+            <tr>
+                <th>상세주소</th>
+                <td><input class="form-control" type="text" name="addr_detail" value="3층 다산카이스"></td>
+            </tr>
+            <tr>
+                <th>전화번호</th>
+                <td><input class="form-control" type="text" name="phone" id="phone"></td>
+            </tr>
+            <tr>
+                <td colspan="2" id="phoneconf"></td>
+            </tr>
+            <tr>
+                <th>이메일</th>
+                <td><input class="form-control" type="text" name="email" id="email"></td>
+            </tr>
+            <tr>
+                <td colspan="2" id="emailconf"></td>
+            </tr>
+        </table>
+        <input class="btn btn-default" style="width : 100%;" type="submit" value="submit">
+    </form>
+</div>
+
+<script>
+    $(document).on("keyup", "input:text[numberOnly]", function() {
+        $(this).val($(this).val().replace(/[^0-9]/g,""));
+    });
+    $('username').focusout(function(){
+        const obj = {};
+        obj.username = $(this).val();
+        $.ajax({
+            url : '/accounts/username/auth',
+            type : 'POST',
+            data : obj,
+            dataType : 'json'
+        })
+        .done(function(args){
+            if(args.message === 1){
+                $('#idconf').text('동일한 아이디가 존재합니다!');
+                $('#username').val('');
+                return false
+            } else {
+                $('#idconf').text('');
+            }
+        });
+    });
+    $('#passwordconf').focusout(function(){
+       const password = $('#password').val();
+       const passwordconf = $(this).val();
+       if(password !== passwordconf){
+           $('#pwdconf').text('비밀번호가 맞지 않습니다!');
+           $('#password').val('');
+           $('#passwordconf').val('');
+           return false;
+       } else {
+           $('#pwdconf').text('');
+       }
+    });
+    $('#phone').focusout(function(err){
+          var regExp = /^01([0|1|6|7|8|9]?)-?([0-9]{3,4})-?([0-9]{4})$/;
+          if(!regExp.test($('#phone').val()) && !$('#phone').val() ==""){
+            $('#phoneconf').text('잘못된 전화번호입니다')
+            return false;
+          }else {
+            $('#phoneconf').text('')
+          }
+    });
+        $('#email').focusout(function(err){
+          var obj = new Object();
+          obj.email = $('#email').val();
+          var regExp = /^[0-9a-zA-Z]([-_\.]?[0-9a-zA-Z])*@[0-9a-zA-Z]([-_\.]?[0-9a-zA-Z])*\.[a-zA-Z]{2,3}$/i;
+          if(!regExp.test($('#email').val()) && !$('#email').val() == ""){
+            $('#emailconf').text('잘못된 이메일 형식입니다');
+            $('#email').val('');
+            return false;
+          } else {
+            $('#emailconf').text('');  
+            $.ajax({
+              url : '/auth/customer/email',
+              type : 'POST',
+              data : obj,
+              dataType : 'json'
+            })
+            .done(function(args){
+              if(args.message  == 1){
+                $('#emailconf').val('같은 이메일이 존재합니다')
+                $('#email').text('');
+              } else {
+                  $('#emailconf').text('')
+              }
+            })
+            .fail(function(err){
+              console.error(err);
+            });
+          }
+        });
+    $('.form-group').submit(function(){
+        const username = $('#username').val();
+        const password = $('#password').val();
+        const email = $('#email').val();
+        const addr = $('#addr').val();
+        const phone = $('#phone').val();
+    });
+</script>
+
+<% include ../modules/address.ejs %>
+<% include ../footer.ejs %>

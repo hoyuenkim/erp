@@ -1,0 +1,164 @@
+<% include ../header.ejs %> <% include ../navibar.ejs %>
+
+<div class="col-sm-offset-2 col-sm-8">
+  <form class="form-group" id="form-group" method="POST" action="">
+    <table class="table table-borderless">
+      <tr>
+        <th class="col-sm-3">상품명</th>
+        <td class="col-sm-9">
+          <input
+            id="product"
+            name="product"
+            class="form-control"
+            type="text"
+            placeholder="필수값"
+            value="<%=product.product%>"
+          />
+        </td>
+      </tr>
+      <tr>
+        <td id="pdtconf" colspan="2"></td>
+      </tr>
+      <tr>
+        <th>타입</th>
+        <td>
+          <select name="type" id="type" class="form-control">
+            <% if(product){ %>
+            <option value="<%=product.type%>" selected
+              ><%=product.stat%></option
+            >
+            <% } else { %>
+            <option value="" selected disabled hidden></option>
+            <% } %>
+            <option value="1">원패스</option>
+            <option value="2">서버</option>
+            <option value="3">자재</option>
+            <option value="4">재공품</option>
+          </select>
+        </td>
+      </tr>
+      <%if(product && product.type == 1){%>
+      <tr>
+        <th>상세</th>
+        <td>
+          <select name="detail" id="detail" class="form-control">
+            <%if(product.detail == 1){%>
+            <option value="1" selected hidden>원패스키</option>
+            <%} else {%>
+            <option value="2" selected disabled hidden>
+            <%}%>
+            <option value="1">원패스키</option>
+            <option value="2">일반</option>
+          </select>
+        </td>
+      </tr>
+      <%}%>
+      <tr>
+        <th>재고수량</th>
+        <td>
+          <input class="form-control" id="stock" name="stock" type="text" value="<%=product.stock%>" numberOnly>
+        </td>
+      </tr>
+      <tr>
+        <th>매입가</th>
+        <td>
+          <input
+            id="cost"
+            class="form-control"
+            name="cost"
+            type="text"
+            value="<%=product.cost%>"
+            numberOnly
+          />
+        </td>
+      </tr>
+      <tr>
+        <th>출고가</th>
+        <td>
+          <input
+            id="price"
+            class="form-control"
+            name="price"
+            type="text"
+            value="<%=product.price%>"
+            numberOnly
+          />
+        </td>
+      </tr>
+    </table>
+
+    <input
+      class="btn btn-default"
+      type="submit"
+      style="width : 100%;"
+      value="등록하기"
+    />
+  </form>
+</div>
+
+<script>
+  $("#form-group").submit(function() {
+    const product = $("#product").val();
+    const type = $("#type").val();
+    const detail = $('#detail').val();
+    const stock = $("#stock").val();
+    const cost = $('#cost').val();
+    const price = $('#price').val();
+    console.log(product, type, detail, stock, cost, price);
+    if(type == 1 && !detail){
+      alert("필수값들을 모두 채워주세요~");
+      return false;
+    }
+    if (!product || !type || !stock || !price || !cost) {
+      alert("필수값들을 모두 채워주세요.");
+      return false;
+    }
+  });
+
+  $(document).on('change', '#type', function(){
+    const type = $(this).val();
+    const id = $(this).closest('tr').next('tr').children('td').children('select').attr('id');
+    if(type == 1){
+      $(this).closest('tr').after(`
+      <tr>
+        <th>상세</th>
+        <td>
+          <select name="detail" id="detail" class="form-control">
+            <option value="1">원패스키</option>
+            <option value="2">일반</option>
+          </select>
+        </td>
+      </tr>
+      `);
+    } else if(type != 1 && id == 'detail'){
+      $(this).closest('tr').next('tr').remove();
+    }
+  });
+
+  $("#product").focusout(function() {
+    const obj = {};
+    obj.product = $("#product").val();
+    $.ajax({
+      type: "POST",
+      data: obj,
+      url: " /storage/product/auth",
+      dataType: "json"
+    })
+      .done(function(args) {
+        if (args.message == 1) {
+          $("#product").val("");
+          $("#pdtconf").text("같은 상품명이 존재합니다!");
+        } else {
+          $("#pdtconf").text("");
+        }
+      })
+      .fail(function(err) {
+        if (err) console.error(err);
+      });
+  });
+
+    $(document).on("keyup", "input:text[numberOnly]", function() {
+        $(this).val($(this).val().replace(/[^0-9]/g,""));
+    });
+</script>
+<% include ../footer.ejs %>

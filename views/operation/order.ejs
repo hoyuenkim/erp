@@ -1,0 +1,444 @@
+<% include ../header.ejs %>
+<% include ../navibar.ejs %>
+<div class="col-sm-offset-1 col-sm-10">
+    <form class="form-group" action="" method="post">
+        <table class="table table-borderless">
+            <tr>
+                <td class="col-sm-6">
+                    <div style="border : grey 0.5px solid; border-radius: 10px; padding : 1%;">
+                        <table class="table table-borderless">
+                            <tr>
+                                <th class="col-sm-3">고객회사명</th>
+                                <td class="col-sm-9"><select class="form-control" name="customer" id="company" selected="">
+                                <option value="" selected disabled hidden></option>
+                                    <%customerList.forEach(function(customer){%>
+                                        <option value="<%=customer.name%>"><%=customer.name%></option>
+                                    <%});%>
+                                </select></td>
+                            </tr>
+                            <tr>
+                                <th>고객사CEO</th>
+                                <input type="hidden" name="bscode">
+                                <td><input class="form-control" id="ceo" name="ceo" type="text"></td>
+                            </tr>
+                            <tr>
+                                <th>고객사담당자</th>
+                                <td><input class="form-control" id="attention" name="attention" type="text"></td>
+                            </tr>
+                            <tr>
+                                <th>고객사 전화번호</th>
+                                <td><input class="form-control" id="phone" name="phone" type="text"></td>
+                            </tr>
+                            <tr>
+                                <th>고객사 주소</th>
+                                <td><input class="form-control" id="addr" name="addr" type="text" readonly onclick="setDaumPostcode()"></td>
+                            </tr>
+                            <tr>
+                                <th>고객사 상세주소</th>
+                                <td><input class="form-control" id="addr_detail" name="addr" type="text"></td>
+                            </tr>
+                            <tr>
+                                <th>고객사 이메일</th>
+                                <td><input class="form-control" id="email" name="email" type="text"></td>
+                            </tr>
+                            <input type="hidden" id="bizcode" name="bizcode">
+                        </table>
+                    </div>
+                </td>
+                <td class="col-sm-12">
+                    <div style="border : grey 0.5px solid; border-radius: 10px; padding : 1%;">
+                        <table class="table table-borderless">
+                            <tr>
+                                <th class="col-sm-3">회사명</th>
+                                <td class="col-sm-9">
+                                    <input class="form-control" type="text" value="다산카이스" readonly>
+                                </td>
+                            </tr>
+                            <tr>
+                                <th>CEO</th>
+                                <td><input class="form-control" type="text" value="윤정구" readonly></td>
+                            </tr>
+                            <tr>
+                                <th>담당자</th>
+                                <td><input class="form-control" type="text" readonly value="<%=userData.name%>"></td>
+                            </tr>
+                            <tr>
+                                <th>담당자 전화번호</th>
+                                <td><input class="form-control" type="text" readonly value="<%=userData.phone%>"></td>
+                            </tr>
+                            <tr>
+                                <th>회사 주소</th>
+                                <td><input class="form-control" type="text" readonly value="<%=userData.addr%>"></td>
+                            </tr>
+                            <tr>
+                                <th>회사 상세주소</th>
+                                <td><input class="form-control" type="text" readonly value="<%=userData.addr_detail%>"></td>
+                            </tr>
+                            <tr>
+                                <th>담당자 이메일</th>
+                                <td><input class="form-control" type="text" readonly value="<%=userData.email%>"></td>
+                            </tr>
+                        </table>
+                    </div>
+                </td>
+            </tr>
+        </table>
+        <hr>
+        <p></p>
+        <div class="col-sm-12" style="border : grey 0.5px solid; border-radius: 10px; padding : 1%;">
+            <table class="table table-borderless">
+                <tr>
+                    <th class="col-sm-2">어플리케이션</th>
+                    <td class="col-sm-10"><input class="form-control" type="text" name="application"></td>
+                </tr>
+                <tr>
+                    <th>제목</th>
+                    <td><input class="form-control" name="title" id="title" type="text"></td>
+                </tr>
+            </table>
+            <div class="col-sm-12" style="border : grey 0.5px solid; border-radius: 10px;">
+            <div class="col-sm-12" style="text-align: right; padding : 1%;">
+                <div class="btn btn-default" id="add">추가하기</div>
+            </div>
+                <table class="table table-borderless table-sm" id="list">
+                    <colgroup>
+                        <col width="20%">
+                        <col width="15%">
+                        <col width="45%">
+                        <col width="15%">
+                        <col width="5%">
+                    </colgroup>
+                    <tr style="background-color: #f2f2f2;">
+                        <th>부품명</th>
+                        <th>수량</th>
+                        <th>부품</th>
+                        <th>총액</th>
+                        <th>삭제</th>
+                    </tr>
+                    <tr>
+                        <td>
+                            <input class="form-control product" type="text" name="material">
+                            <input type="hidden" name="product">
+                            <input type="hidden" name="rows">
+                        </td>
+                        <td>
+                            <input class="form-control" type="text" name="unit">
+                        </td>
+                        <td>
+                            <table class="table table-borderless">
+                                <tr class="init">
+                                    <input class="form-control" type="text" disabled value="">
+                                </tr>
+                            </table>
+                        </td>
+                        <td>
+                            <input class="form-control" type="text" name="amount">
+                        </td>
+                        <td>
+                            <a class="delete"><i class="fas fa-trash-alt"></i></a>
+                        </td>
+                    </tr>
+                </table>
+            </div>   
+                <input class="btn btn-danger" style="width: 100%;" type="submit" value="send">
+        </form>
+</div>
+    <% include ../modules/address.ejs %>
+    <script>
+
+    $('.form-group').submit(function(e){
+        const bscode = $('input[name="bscode"]').val();
+        const title = $('#title').val();
+        if(!bscode || !title){
+            return false;
+        }
+        const product = $('.product');
+        for(i=1;i<product.length+1;i++){
+            let product = $('#list').children('tbody').children('tr').eq(i).children('td').eq(0).children('input[name="product"]').val();
+            let unit = $('#list').children('tbody').children('tr').eq(i).children('td').eq(1).children('input[name="unit"]').val();
+            let amount = $('#list').children('tbody').children('tr').eq(i).children('td').eq(3).children('input[name="amount"]').val();
+            if(!product || !unit || !amount){
+                alert('필수 값을 채워주세요');
+                return false;
+            }
+        }
+        $('input[name="parts"]').each(function(indx, item){
+            let test = $(item).val();
+            if(!$(item).val()){
+                e.preventDefault();
+                alert('필수값을 모두 채워주세요');
+                return false;
+            }
+        });
+        $('input[name="partsunit"]').each(function(indx, item){
+            let test = $(item).val();
+            if(!$(item).val()){
+                e.preventDefault();
+                alert('필수값을 모두 채워주세요');
+                return false;
+            }
+        });
+    });
+
+    $('#add').click(function(){
+        $('#list > tbody:last').append(`
+            <tr>
+                <td>
+                    <input class="form-control product" type="text" name="material">
+                    <input type="hidden" name="product">
+                    <input type="hidden" name="rows">
+                </td>
+                <td>
+                    <input class="form-control" type="text" name="unit">
+                </td>
+                <td>
+                    <table class="table table-borderlesss">
+                        <tr>
+                            <input class="form-control" type="text" disabled value="">
+                        </tr>
+                    </table>
+                </td>
+                <td>
+                    <input class="form-control" type="text" name="amount">
+                </td>
+                <td>
+                    <a class="delete"><i class="fas fa-trash-alt"></i></a>
+                </td>
+            </tr>
+        `)
+    });
+
+    $(document).on('focusout', 'input[name="material"]', function(){
+        const that = $(this);
+        const obj = {};
+        const conf = that.closest('tr').next('tr').attr('conf');
+        obj.product = $(this).val();
+        if(!obj.product){
+            if(conf == 'true'){
+                that.closest('tr').next('tr').remove();
+            }
+            return false;
+        }
+        $.ajax({
+            data : obj,
+            dataType : 'json',
+            type : 'POST',
+            url : '/operation/material/find'
+        })
+        .done(function(args){
+            if(args.searchList.length == 0){
+                alert('그런 제품/제공품은 존재하지 않습니다');
+                that.val('');
+                if(conf == 'true'){
+                    that.closest('tr').next('tr').remove();
+                }
+                return false;
+            } else {
+                if(conf == 'true'){
+                    that.closest('tr').next('tr').remove();
+                }
+                let str = '';
+                args.searchList.forEach(function(search){
+                    str = str + `<a style="margin-right : 1%; font-size : 70%" class="btn btn-default selected" id="${search._id}">${search.product}</a>`
+                });
+                that.closest('tr').after(
+                    `
+                        <tr conf="true">
+                            <td colspan=4>
+                            ${str}
+                            </td>
+                        </tr>
+                    `
+                )
+            }
+        })
+        .fail(function(err){
+            if(err) console.error(err);
+        })
+    });
+
+    $(document).on('click', '.selected', function(){
+        const that = $(this);
+        const obj = {};
+        obj.product = $(this).attr('id');
+        $.ajax({
+            url : '/operation/find/partslist',
+            data: obj,
+            dataType : 'json',
+            type : 'POST'
+        })
+        .done(function(args){
+            that.closest('tr').prev('tr').children('td').eq(0).children('input[name="material"]').val(that.text());
+            that.closest('tr').prev('tr').children('td').eq(0).children('input[name="product"]').val(obj.product);
+            let str = '';
+            args.partsList.forEach(function(parts){
+                str = str + `
+                <tr>
+                    <td><input class="form-control parts" type="text" value="${parts.product.product}">
+                        <input type="hidden" value="${parts.product._id}" name="parts">
+                    </td>
+                    <td><input class="form-control" type="text" name="partsunit" value="${parts.unit}" readonly numberOnly></td>
+                    <td><div class="btn btn-success add">추가</div></td>
+                    <td><div class="btn btn-danger remove">삭제</div></td>
+                </tr>
+                `
+            });
+            that.closest('tr').prev('tr').children('td').eq(2).html(`
+                <table>
+                    ${str}
+                </table>
+            `);
+            that.closest('tr').prev('tr').children('td').eq(0).children('input[name="rows"]').val(args.partsList.length);
+            that.closest('tr').remove();
+        })
+        .fail(function(err){
+            if(err) console.error(err);
+        })
+    });
+
+    $(document).on('click', '.add', function(){
+        $(this).closest('tr').after(`
+                <tr>
+                    <td><input class="form-control parts" type="text">
+                        <input type="hidden" name="parts">
+                    </td>
+                    <td><input class="form-control" type="text" name="partsunit"></td>
+                    <td><div class="btn btn-success add">추가</div></td>
+                    <td><div class="btn btn-danger remove">삭제</div></td>
+                </tr>
+        `);
+        const former = $(this).closest('table').closest('tr').children('td').eq(0).children('input[name="rows"]').val();
+        $(this).closest('table').closest('tr').children('td').eq(0).children('input[name="rows"]').val(parseInt(former)+1);
+    });
+
+    $(document).on('click', '.remove', function(){
+        const that = $(this);
+        const rows = $('#list').children('tbody').children('tr').length;
+        const count = $(this).closest('table').children('tbody').children('tr').length;
+        const conf = that.closest('tr').next('tr').attr('conf');
+        if(conf == 'true'){
+                    that.closest('tr').next('tr').remove();
+        }
+        if(rows == 2 && count == 1){
+            $(this).closest('table').parent('td').html(`
+                <table class="table table-borderlesss table-sm">
+                    <tr class="init">
+                        <input class="form-control" type="text" disabled value="">
+                    </tr>
+                </table>
+            `)
+        }
+        else if(rows !=2 && count == 1){
+            const former = $(this).closest('table').closest('tr').children('td').eq(0).children('input[name="rows"]').val();
+            $(this).closest('table').closest('tr').children('td').eq(0).children('input[name="rows"]').val(parseInt(former)-1);
+            $(this).closest('table').closest('tr').remove();
+        } else {
+            const former = $(this).closest('table').closest('tr').children('td').eq(0).children('input[name="rows"]').val();
+            alert(former)
+            $(this).closest('table').closest('tr').children('td').eq(0).children('input[name="rows"]').val(parseInt(former)-1);
+            $(this).closest('tr').remove();
+        }
+    });
+
+        $('#company').change(function(){
+            const obj = {};
+            obj.customer = $(this).val();
+            console.log(obj.customer)
+            $.ajax({
+                url : '/customer/data',
+                type : 'POST',
+                data : obj,
+                dataType : 'json'
+            })
+            .done(function(args){
+                const contents = args.customer;
+                $('#ceo').val(contents.ceo);
+                $('input[name="bscode"]').val(contents._id);
+                $('#attention').val(contents.attention);
+                $('#email').val(contents.email);
+                $('#addr').val(contents.addr);
+                $('#addr_detail').val(contents.addr_detail);
+                $('#phone').val(contents.phone);
+                $('#bizcode').val(contents.bizcode);
+            })
+            .fail(function(err){
+                console.error(err);
+            });
+        });
+
+        $(document).on('click', '.delete', function(){
+            const that = $(this);
+            const rows = $('#list').children('tbody').children('tr').length;
+            const conf = that.closest('tr').next('tr').attr('conf');
+            if(rows == 2){
+                if(conf == 'true'){
+                    that.closest('tr').next('tr').remove();
+                }
+                return false;
+            } else {
+                if(conf == 'true'){
+                    that.closest('tr').next('tr').remove();
+                } 
+            $(this).closest('tr').remove();
+            }
+        });
+
+        $(document).on("keyup",  "input:text[numberOnly]", function() {
+            $(this).val($(this).val().replace(/[^0-9]/g,""));
+        });
+
+        $(document).on('change', '.parts', function(){
+            const obj = {};
+            obj.product = $(this).val();
+            const that = $(this);
+            const conf = that.closest('tr').next('tr').attr('conf');
+            if(!obj.product){
+                if(conf == 'true'){
+                    that.closest('tr').next('tr').remove();
+                }
+                return false;
+            }
+            $.ajax({
+                data: obj,
+                dataType: 'json',
+                type : 'POST',
+                url: '/operation/parts/search'
+            })
+            .done(function(args){
+                let data = '';
+                `${args.searchList.forEach(function(list){
+                    data = data+'<a style="margin-right : 1%; font-size : 70%;"class="btn btn-default chosen" id="'+list._id+'">'+list.product+'</a>'
+                })}`
+                if(conf == 'true'){
+                    that.closest('tr').next('tr').remove();
+                }
+                that.closest('tr').after(`
+                    <tr conf="true">
+                        <td colspan="2">
+                            ${data}
+                        </td>
+                    </tr>
+                `);
+            })
+            .fail(function(err){
+                if(err) console.error(err);
+            })
+        });
+
+        $(document).on('click', '.chosen', function(){
+            const that = $(this);
+            $(this).closest('tr').prev('tr').children('td').eq(0).children('.parts').val(that.text());
+            $(this).closest('tr').prev('tr').children('td').eq(0).children('input[name="parts"]').val(that.attr('id'));
+            $(this).closest('tr').remove();
+        });
+
+        $(document).on('change', 'input[name="unit"]', function(){
+            const rows = $(this).closest('tr').children('td').eq(2).children('table').children('tbody').children('tr');
+            for(i=0;i<rows.length;i++){
+                let unit = rows.eq(i).children('td').eq(1).children('input').val();
+                rows.eq(i).children('td').eq(1).children('input').val(parseInt(unit)*parseInt($(this).val()));
+            }
+        });
+    </script>
+
+<% include ../footer.ejs %>

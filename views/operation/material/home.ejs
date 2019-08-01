@@ -1,0 +1,66 @@
+<% include ../../header.ejs %>
+<% include ../../navibar.ejs %>
+
+<div class="col-sm-offset-1 col-sm-10">
+    <h1>재공품 제조홈</h1>
+    <table class="table table-borderless table-hover">
+        <tr style="background-color: #f2f2f2">
+            <th>제공품명</th>
+            <th>부품명</th>
+            <th>등록일자</th>
+        </tr>
+        <%materialList.forEach(function(material){%>
+            <tr class="" style="cursor : pointer;" onclick="location.href='/operation/material/edit/<%=material.id%>'">
+                <td><%=material.product.product%></td>
+                <td><%material.parts.forEach(function(part){%>
+                    <%=part.product.product%>, 
+                <%})%></td>
+                <td>
+                    <%=material.create_at.toLocaleDateString()%>
+                </td>
+            </tr>
+        <%})%>
+    </table>
+
+    <div class="" style="text-align : center;">
+        <ul>
+          <%
+            var offset = 3;
+            var partialQuery;
+            if(urlQuery) partialQuery = urlQuery.replace(/&page=(.*?)(&|$)/ig,"");
+          %>
+          <% for(i=1;i<=maxPage;i++){ %>
+            <% if(i<=offset || i>maxPage-offset || (i>=page-(offset-1) && i<=page+(offset-1))){ %>
+              <% if(i != page){ %>
+                <li style="display : inline-block;"><a href="/operation/material/home?<%=partialQuery%>&page=<%= i %>">[ <%= i %> ]</a></li>
+                <% } else { %>
+                  <li style="display : inline-block;">[ <b><%= i %></b> ]</li>
+                  <% } %>
+                <% } else if(i == offset+1 || i == maxPage-offset){ %>
+                  <li style="display : inline-block;">...</li>
+                <% } %>
+              <%}%>
+        </ul>
+      </div>
+      <form class="col-sm-12" action="" id="search">
+          <table class="table">
+            <tr>
+              <td class=col-sm-3>
+                <select class="form-control" name="searchType">
+                  <% var select %>
+                  <option value="product"
+                  <%= search.searchType=="product"?select="selected":"" %>>상품명</option>
+                </select>
+              </td>
+              <td class="col-sm-7">
+                <input class="form-control" type="text" name="searchText" value="<%= select?search.searchText:"" %>">
+              </td>
+              <td class="col-sm-2">
+                <button class="btn btn-default" type="submit" style="width : 100%;">search</button>
+              </td>
+            </tr>
+          </table>
+        </form>
+</div>
+
+<% include ../../footer.ejs %>

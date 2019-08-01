@@ -1,0 +1,274 @@
+<% include ./header.ejs %> 
+<% include ./navibar.ejs %>
+<div class="col-sm-12">
+  <div class="col-sm-12">
+    <div class="panel panel-danger">
+      <div class="panel-heading">
+        지연일정
+        <span style="margin-left : 75%"
+          ><a href="/table/summary" style="text-decoration: none">more</a></span
+        >
+      </div>
+      <div class="panel-body">
+        <table class="table table-borderless table-striped">
+          <colgroup>
+            <col width="20%" />
+            <col width="10%" />
+            <col width="10%" />
+            <col width="40%" />
+            <col width="10%" />
+            <col width="10%" />
+          </colgroup>
+          <tr>
+            <th>현장명</th>
+            <th>고객명</th>
+            <th>납기일</th>
+            <th>연동</th>
+            <th>원패스 출고</th>
+            <th>서버 출고</th>
+          </tr>
+          <% alertList.forEach(function(table){ %> <%if(table.onepass_ship ===
+          '미출고' || table.server_ship === '미출고'){%>
+          <tr
+            style="cursor : pointer; font-size: 90%;"
+            onclick="location.href='/table/schedule/subject/<%=table.serial%>'"
+          >
+            <td><%=table.subject%></td>
+            <td><%=table.customer%></td>
+            <td><%=table.getDate%></td>
+            <td>
+              <%if(table.static.use === true && table.static_conf === false){%>
+              <span class="btn btn-default" style="font-size: 70%">공통</span>
+              <%} else if(table.static.use === true && table.static_conf === true){%>
+              <span class="btn btn-success" style="font-size: 70%">공통</span>
+              <%}%> <%if(table.hn.use === true && table.hn_conf === false){%>
+              <span class="btn btn-default" style="font-size: 70%">홈넷</span>
+              <%} else if(table.hn.use === true && table.hn_conf === true){%>
+              <span class="btn btn-success" style="font-size: 70%">홈넷</span>
+              <%}%> <%if(table.op.use === true && table.op_conf === false){%>
+              <span class="btn btn-default" style="font-size: 70%">원패스</span>
+              <%} else if(table.op.use === true && table.op_conf === true){%>
+              <span class="btn btn-success" style="font-size: 70%">원패스</span>
+              <%}%> <%if(table.em.use === true && table.em_conf === false){%>
+              <span class="btn btn-default" style="font-size: 70%">비상벨</span>
+              <%} else if(table.em.use === true && table.em_conf === true){%>
+              <span class="btn btn-success" style="font-size: 70%">비상벨</span>
+              <%}%> <%if(table.ev.use === true && table.ev_conf === false){%>
+              <span class="btn btn-default" style="font-size: 70%">E/V</span>
+              <%} else if(table.ev.use === true && table.ev_conf === true){%>
+              <span class="btn btn-success" style="font-size: 70%">E/V</span>
+              <%}%> <%if(table.cctv.use === true && table.cctv_conf ===
+              false){%>
+              <span class="btn btn-default" style="font-size: 70%">CCTV</span>
+              <%} else if(table.cctv.use === true && table.cctv_conf ===
+              true){%>
+              <span class="btn btn-success" style="font-size: 70%">CCTV</span>
+              <%}%> <%if(table.parking.use === true && table.parking_conf ===
+              false){%>
+              <span class="btn btn-default" style="font-size: 70%">주차</span>
+              <%} else if(table.parking.use === true && table.parking_conf
+              === true){%>
+              <span class="btn btn-success" style="font-size: 70%">주차</span>
+              <%}%>
+            </td>
+            <td><%=table.onepass_ship%></td>
+            <td><%=table.server_ship%></td>
+          </tr>
+          <%}%> <% }); %>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-sm-12">
+    <div class="panel panel-default">
+      <div class="panel-heading">
+        2주내 진행 일정
+        <span style="margin-left : 75%"
+          ><a href="/table/summary" style="text-decoration: none">more</a></span
+        >
+      </div>
+      <div class="panel-body">
+        <table class="table table-borderless table-striped">
+          <colgroup>
+            <col width="20%" />
+            <col width="10%" />
+            <col width="10%" />
+            <col width="40%" />
+            <col width="10%" />
+            <col width="10%" />
+          </colgroup>
+          <tr>
+            <th>현장명</th>
+            <th>고객명</th>
+            <th>납기일</th>
+            <th>연동</th>
+            <th>원패스 출고</th>
+            <th>서버 출고</th>
+          </tr>
+          <% tableList.forEach(function(table){ %>
+          <tr
+            style="cursor : pointer; font-size: 90%;"
+            onclick="location.href='/table/schedule/subject/<%=table.serial%>'"
+          >
+            <td><%=table.subject%></td>
+            <td><%=table.customer%></td>
+            <td><%=table.getDate%></td>
+            <td>
+              <%if(table.static.use === true && table.static_conf ===
+              false){%>
+              <span class="btn btn-default" style="font-size: 70%">공통</span>
+              <%} else if(table.static.use === true && table.static_conf ===
+              true){%>
+              <span class="btn btn-success" style="font-size: 70%">공통</span>
+              <%}%> <%if(table.hn.use === true && table.hn_conf === false){%>
+              <span class="btn btn-default" style="font-size: 70%">홈넷</span>
+              <%} else if(table.hn.use === true && table.hn_conf === true){%>
+              <span class="btn btn-success" style="font-size: 70%">홈넷</span>
+              <%}%> <%if(table.op.use === true && table.op_conf === false){%>
+              <span class="btn btn-default" style="font-size: 70%">원패스</span>
+              <%} else if(table.op.use === true && table.op_conf === true){%>
+              <span class="btn btn-success" style="font-size: 70%">원패스</span>
+              <%}%> <%if(table.em.use === true && table.em_conf === false){%>
+              <span class="btn btn-default" style="font-size: 70%">비상벨</span>
+              <%} else if(table.em.use === true && table.em_conf === true){%>
+              <span class="btn btn-success" style="font-size: 70%">비상벨</span>
+              <%}%> <%if(table.ev.use === true && table.ev_conf === false){%>
+              <span class="btn btn-default" style="font-size: 70%">E/V</span>
+              <%} else if(table.ev.use === true && table.ev_conf === true){%>
+              <span class="btn btn-success" style="font-size: 70%">E/V</span>
+              <%}%> <%if(table.cctv.use === true && table.cctv_conf ===
+              false){%>
+              <span class="btn btn-default" style="font-size: 70%">CCTV</span>
+              <%} else if(table.cctv.use === true && table.cctv_conf ===
+              true){%>
+              <span class="btn btn-success" style="font-size: 70%">CCTV</span>
+              <%}%> <%if(table.parking.use === true && table.parking_conf ===
+              false){%>
+              <span class="btn btn-default" style="font-size: 70%">주차</span>
+              <%} else if(table.parking.use === true && table.parking_conf
+              === true){%>
+              <span class="btn btn-success" style="font-size: 70%">주차</span>
+              <%}%>
+            </td>
+            <td><%=table.onepass_ship%></td>
+            <td><%=table.server_ship%></td>
+          </tr>
+          <% }); %>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-sm-12">
+    <div class="panel panel-default">
+      <div class="panel-heading">서버재고현황(2주내 발주기준)</div>
+      <div class="panel-body">
+        <%severStorages.forEach(function(serverStorage){%>
+        <div class="col-sm-2">
+          <div class="panel panel-default">
+            <div class="panel-heading"><%=serverStorage.product%></div>
+            <div class="panel-body"><%=serverStorage.stock%></div>
+          </div>
+        </div>
+        <%});%>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-sm-12">
+    <div class="panel panel-default">
+      <div class="panel-heading">원패스재고현황(2주내 발주기준)</div>
+      <div class="panel-body">
+        <%onepassStorages.forEach(function(onepassStorage){%>
+        <div class="col-sm-2">
+          <%if(onepassStorage.unit > 0){%>
+          <div class="panel panel-default">
+            <% } else { %>
+            <div class="panel panel-danger">
+              <% } %>
+              <div class="panel-heading"><%=onepassStorage.product%></div>
+              <div class="panel-body"><%=onepassStorage.unit%></div>
+            </div>
+          </div>
+          <%});%>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-sm-6">
+      <div class="panel panel-default">
+        <div class="panel-heading">
+          최근 구매기록
+          <span style="margin-left : 70%"
+            ><a href="/order/home" style="text-decoration: none">more</a></span
+          >
+        </div>
+        <div class="panel-body">
+          <table class="table table-borderless table-striped">
+            <tr>
+              <th>업체명</th>
+              <th>상품</th>
+              <th>수량</th>
+              <th>담당자</th>
+              <th>구매날짜</th>
+            </tr>
+            <% orderList.forEach(function(order){ %>
+            <tr>
+              <td><%=order.customer%></td>
+              <%if(order.product){%>
+              <td><%=order.product.product%></td>
+              <%} else {%>
+              <td></td>
+              <%}%>
+              <td><%=order.unit%>EA</td>
+              <td><%=order.manager%></td>
+              <td><%=order.created_at.toLocaleDateString()%></td>
+            </tr>
+            <% }); %>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-sm-6">
+      <div class="panel panel-default">
+        <div class="panel-heading">
+          최근 매출기록
+          <span style="margin-left : 70%"
+            ><a href="/sales/home" style="text-decoration: none">more</a></span
+          >
+        </div>
+        <div class="panel-body">
+          <table class="table table-borderless table-striped">
+            <tr>
+              <th>업체명</th>
+              <th>상품</th>
+              <th>수량</th>
+              <th>담당자</th>
+              <th>판매날짜</th>
+            </tr>
+            <% salesList.forEach(function(sales){ %>
+            <tr
+              style="cursor : pointer;"
+              onclick="location.href='/sales/edit/<%=sales.id%>'"
+            >
+              <td><%=sales.customer%></td>
+              <%if(sales.product){%>
+              <td><%=sales.product.product%></td>
+              <%} else {%>
+              <td></td>
+              <%}%>
+              <td><%=sales.set%>EA</td>
+              <td><%=sales.manager%></td>
+              <td><%=sales.shipdate%></td>
+            </tr>
+            <% }); %>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <% include ./footer.ejs %>
+</div>

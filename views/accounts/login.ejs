@@ -1,0 +1,41 @@
+<% include ../header.ejs %>
+
+<div class="col-sm-offset-4 col-sm-4" style="margin-top : 10%;">
+  <div class="" style="text-align: center; margin-bottom : 3%;">
+    <img src="/static/logo.png" alt="">
+  </div>
+  <form class="form-group" action="/accounts/login" method="post">
+    <table class="table table-borderless">
+      <tr>
+        <td colspan=2 align="right"><a href="/accounts/join" style="text-decoration: none;">신규가입</a></td>
+      </tr>
+      <tr>
+        <th class="col-sm-3">아이디</th>
+        <td><input class="form-control col-sm-9" id="user_id" type="text" name="username" value=""></th>
+        </tr>
+        <tr>
+          <th class="">패스워드</td>
+            <td><input class="form-control" id="password" type="password" name="password" value=""></td>
+          </tr>
+        </table>
+        <input class="btn btn-default" type="submit" name="button" style="width : 100%;" value="login">
+      </form>
+      <%if(typeof flashMessage !=='undefined') {%>
+      <div class="col-sm-12 alert alert-danger" role="alert" style="text-align : center;"><%=flashMessage%></div>
+      <%}%>
+    </div>
+
+<script type="text/javascript">
+  $('.form-group').submit(function(){
+    if(!$('#user_id').val()){
+      alert('아이디를 입력해주세요');
+      return false;
+    } else if(!$('#password').val()){
+      alert('패스워드를 입력해주세요');
+      return false;
+    }
+    alert(flashMessage);
+  });
+</script>
+
+<% include ../footer.ejs %>

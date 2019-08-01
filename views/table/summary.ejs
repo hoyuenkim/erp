@@ -1,0 +1,115 @@
+<% include ../header.ejs %>
+<% include ../navibar.ejs %>
+
+<div class="col-sm-12">
+  <div class="col-sm-10">
+    <h3>요약일정</h3>
+  </div>
+  <div class="col-sm-2"><h3 onclick="location.href='/table/regist'" style="cursor : pointer;">등록하기</h3></div>
+    <table class="table table-borderless table-striped table-hover">
+        <colgroup>
+            <col width="20%">
+            <col width="10%">
+            <col width="10%">
+            <col width="40%">
+            <col width="10%">
+            <col width="10%">
+        </colgroup>
+        <tr>
+            <th>현장명</th>
+            <th>고객명</th>
+            <th>납기일</th>
+            <th>연동</th>
+            <th>원패스 출고</th>
+            <th>서버 출고</th>
+        </tr>
+        <%tableList.forEach(function(table){%>
+            <tr style="cursor : pointer; font-size: 90%;" onclick="location.href='/table/schedule/subject/<%=table.serial%>'">
+                <td><%=table.subject%></td>
+                <td><%=table.customer%></td>
+                <td><%=table.getDate%></td>
+                <td>
+                    <%if(table.static.use === true && table.static_conf === false){%>
+                      <span class="btn btn-default" style="font-size: 70%">공통</span>
+                      <%} else if(table.static.use === true && table.static_conf === true){%>
+                      <span class="btn btn-success" style="font-size: 70%">공통</span>
+                      <%}%> <%if(table.hn.use === true && table.hn_conf === false){%>
+                      <span class="btn btn-default" style="font-size: 70%">홈넷</span>
+                      <%} else if(table.hn.use === true && table.hn_conf === true){%>
+                      <span class="btn btn-success" style="font-size: 70%">홈넷</span>
+                      <%}%> <%if(table.op.use === true && table.op_conf === false){%>
+                      <span class="btn btn-default" style="font-size: 70%">원패스</span>
+                      <%} else if(table.op.use === true && table.op_conf === true){%>
+                      <span class="btn btn-success" style="font-size: 70%">원패스</span>
+                      <%}%> <%if(table.em.use === true && table.em_conf === false){%>
+                      <span class="btn btn-default" style="font-size: 70%">비상벨</span>
+                      <%} else if(table.em.use === true && table.em_conf === true){%>
+                      <span class="btn btn-success" style="font-size: 70%">비상벨</span>
+                      <%}%> <%if(table.ev.use === true && table.ev_conf === false){%>
+                      <span class="btn btn-default" style="font-size: 70%">E/V</span>
+                      <%} else if(table.ev.use === true && table.ev_conf === true){%>
+                      <span class="btn btn-success" style="font-size: 70%">E/V</span>
+                      <%}%> <%if(table.cctv.use === true && table.cctv_conf ===
+                      false){%>
+                      <span class="btn btn-default" style="font-size: 70%">CCTV</span>
+                      <%} else if(table.cctv.use === true && table.cctv_conf ===
+                      true){%>
+                      <span class="btn btn-success" style="font-size: 70%">CCTV</span>
+                      <%}%> <%if(table.parking.use === true && table.parking_conf ===
+                      false){%>
+                      <span class="btn btn-default" style="font-size: 70%">주차</span>
+                      <%} else if(table.parking.use === true && table.parking_conf
+                      === true){%>
+                      <span class="btn btn-success" style="font-size: 70%">주차</span>
+                      <%}%>
+                </td>
+                <td><%=table.onepass_ship%></td>
+                <td><%=table.server_ship%></td>
+            </tr>
+        <%});%>
+    </table>
+    <div class="col-sm-12" style="text-align : center;">
+            <ul>
+              <%
+                var offset = 3;
+                var partialQuery;
+                if(urlQuery) partialQuery = urlQuery.replace(/&page=(.*?)(&|$)/ig,"");
+              %>
+              <% for(i=1;i<=maxPage;i++){ %>
+                <% if(i<=offset || i>maxPage-offset || (i>=page-(offset-1) && i<=page+(offset-1))){ %>
+                  <% if(i != page){ %>
+                    <li style="display : inline-block;"><a href="/table/summary?<%=partialQuery%>&page=<%= i %>">[ <%= i %> ]</a></li>
+                    <% } else { %>
+                      <li style="display : inline-block;">[ <b><%= i %></b> ]</li>
+                      <% } %>
+                    <% } else if(i == offset+1 || i == maxPage-offset){ %>
+                      <li style="display : inline-block;">...</li>
+                    <% } %>
+                  <%}%>
+            </ul>
+          </div>
+          <form class="col-sm-12" action="" id="search">
+              <table class="table">
+                <tr>
+                  <td class=col-sm-3>
+                    <select class="form-control" name="searchType">
+                      <% var select %>
+                      <option value="subject"
+                      <%= search.searchType=="subject"?select="selected":"" %>>프로젝트명</option>
+                      <option value="customer"
+                      <%= search.searchType=="customer"?select="selected":"" %>>고객명</option>
+                    </select>
+                  </td>
+                  <td class="col-sm-7">
+                    <input class="form-control" type="text" name="searchText" value="<%= select?search.searchText:"" %>">
+                  </td>
+                  <td class="col-sm-2">
+                    <button class="btn btn-default" type="submit" style="width : 100%;">search</button>
+                  </td>
+                </tr>
+              </table>
+            </form>
+
+</div>
+
+<% include ../footer.ejs %>

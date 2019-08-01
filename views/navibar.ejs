@@ -1,0 +1,200 @@
+<nav class="navbar navbar-default">
+  <div class="container-fluid">
+    <div class="navbar-header">
+      <button
+        type="button"
+        class="collapsed navbar-toggle"
+        data-toggle="collapse"
+        data-target="#navi"
+        aria-expanded="false"
+      >
+        <span class="icon-bar"></span> <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+      <a href="/home" class="navbar-brand"><i class="fas fa-home"></i>홈화면</a>
+    </div>
+    <div class="collapse navbar-collapse" id="navi">
+      <ul class="nav navbar-nav" style="padding-left : 35%;">
+        <li>
+          <a href="/customer/home"><i class="fas fa-users"></i> 고객관리</a>
+        </li>
+        <li class="navigation">
+          <a style="cursor : pointer;"><i class="fas fa-table"></i>수주/견적</a>
+          <div class="menu" style="display : none; text-align: center;">
+            <table class="table table-borderless table-hover">
+              <tr>
+                <td
+                  onclick="location.href='/request/order'"
+                  style="cursor: pointer;"
+                >
+                  발주
+                </td>
+              </tr>
+              <tr>
+                <td
+                  onclick="location.href='/request/estimate'"
+                  style="cursor : pointer;"
+                >
+                  견적
+                </td>
+              </tr>
+            </table>
+          </div>
+        </li>
+        <li class="navigation" style="text-align: center;">
+          <a style="cursor : pointer;"
+            ><i class="far fa-calendar-check"></i>일정</a
+          >
+          <div class="menu" style="display : none;">
+            <table class="table table-borderless table-hover">
+              <tr>
+                <td
+                  onclick="location.href='/table/summary'"
+                  style="cursor: pointer;"
+                >
+                  요약일정
+                </td>
+              </tr>
+                <td
+                  onclick="location.href='/table/schedule'"
+                  style="cursor : pointer;"
+                >
+                  스케쥴
+                </td>
+              </tr>
+            </table>
+          </div>
+        </li>
+        <li class="navigation" style="text-align: center;">
+          <a href="/storage/home" style="cursor : pointer;"
+            ><i class="fas fa-th"></i>재고관리</a
+          >
+          <div class="menu" style="display : none;">
+            <table class="table table-borderless table-hover">
+              <tr>
+                <td
+                  onclick="location.href='/storage/server'"
+                  style="cursor: pointer;"
+                >
+                  서버재고
+                </td>
+              </tr>
+              <tr>
+                <td
+                  onclick="location.href='/storage/onepass'"
+                  style="cursor : pointer;"
+                >
+                  원패스재고
+                </td>
+              </tr>
+              <tr>
+                <td
+                  onclick="location.href='/storage/parts'"
+                  style="cursor : pointer;"
+                >
+                  부품재고
+                </td>
+              </tr>
+              <tr>
+                <td
+                  onclick="location.href='/storage/unknown'"
+                  style="cursor : pointer;"
+                >
+                  미분류재고
+                </td>
+              </tr>
+              <tr>
+                <td onclick="location.href='/storage/as'" style="cursor : pointer;">
+                  AS 관리
+                </td>
+              </tr>
+            </table>
+          </div>
+        </li>
+        <li class="navigation" style="text-align: center;">
+          <a href="" style="cursor : pointer;"
+            ><i class="fas fa-industry"></i>제조관리</a
+          >
+          <div class="menu" style="display : none;">
+            <table class="table table-borderless table-hover">
+              <tr>
+                <td onclick="location.href='/operation/storage/home'" style="cursor : pointer;">제공품 관리</td>
+              </tr>
+              <tr>
+                <td
+                  onclick="location.href='/operation/order'"
+                  style="cursor : pointer;"
+                >
+                  제공품 발주
+                </td>
+              </tr>
+              <tr>
+                <td
+                  onclick="location.href='/operation/material/home'"
+                  style="cursor : pointer;"
+                >
+                  제공품 리스트
+                </td>
+              </tr>
+              <tr>
+                <td
+                  onclick="location.href='/operation/material/regist'"
+                  style="cursor: pointer;"
+                >
+                  제조등록
+                </td>
+              </tr>
+            </table>
+          </div>
+        </li>
+        <li class="navigation" style="text-align: center;">
+          <a style="cursor : pointer;"
+            ><i class="fas fa-truck"></i>입/출고관리</a
+          >
+          <div class="menu" style="display : none;">
+            <table class="table table-borderless table-hover">
+              <tr>
+                <td
+                  onclick="location.href='/sales/home'"
+                  style="cursor: pointer;"
+                >
+                  출고관리
+                </td>
+              </tr>
+              <tr>
+                <td
+                  onclick="location.href='/order/home'"
+                  style="cursor : pointer;"
+                >
+                  입고관리
+                </td>
+              </tr>
+            </table>
+          </div>
+        </li>
+      </ul>
+      <ul class="nav navbar-nav navbar-right">
+        <li>
+          <a href="/accounts/logout"
+            ><i class="fas fa-power-off"></i> 로그아웃</a
+          >
+        </li>
+      </ul>
+    </div>
+  </div>
+</nav>
+
+<script>
+  $(".navigation").mouseover(function() {
+    $(this)
+      .children("div.menu")
+      .slideDown(1);
+  });
+  $(".navigation").mouseout(function() {
+    setTimeout(function() {
+      $(this)
+        .children("div.menu")
+        .slideUp(1);
+    }, 1000);
+  });
+</script>

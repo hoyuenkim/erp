@@ -1,0 +1,14 @@
+<script type="text/javascript">
+$('input[name="daterange"]').daterangepicker(
+{
+  autoUpdateInput: false,
+   locale: {
+       cancelLabel: 'Clear'
+   }
+ },
+ function(start, end, label) {
+     $('#startDate').val(start.format('YYYY-MM-DD'));
+     $('#endDate').val(end.format('YYYY-MM-DD'));
+ });
+
+</script>

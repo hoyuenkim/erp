@@ -1,0 +1,910 @@
+<% include ../header.ejs %>
+<% include ../navibar.ejs %>
+
+<div class="col-sm-offset-1 col-sm-10">
+    <form class="form-group" action="" method="post" enctype="multipart/form-data">
+        <table class="table table-borderless">
+            <tr>
+                <th class="col-sm-2">프로젝트명</th>
+                <td class="col-sm-10"><%=status.subject%></td>
+            </tr>
+            <tr>
+                <th>클라이언트명</th>
+                <td><%=status.customer%></td>
+            </tr>
+            <tr>
+                <th>담당자명</th>
+                <td><%=customer.attention%></td>
+            </tr>
+            <tr>
+                <th>담당자 연락처</th>
+                <td><%=customer.phone%></td>
+            </tr>
+            <tr>
+                <th>납품일자</th>
+                <td><input class="form-control datepicker" type="text" name="date" value="<%=status.getDate%>"></td>
+            </tr>
+            <tr>
+                <th></th>
+                <td><div class="col-sm-offset-6 col-sm-3"><div class="btn btn-default" style="width : 100%" id="addOnepass">원패스 추가</div></div><div class="col-sm-3"><div class="btn btn-default" style="width : 100%;" id="addServer">서버추가</div></div></td>
+            </tr>
+            <tr>
+                <td colspan=2>
+                    <div class="panel panel-default">
+                        <table class="table table-borderless table-striped" id="table">
+                            <colgroup>
+                                <col width="30%">
+                                <col width="10%">
+                                <col width="15%">
+                                <col width="20%">
+                                <col width="10%">
+                                <col width="10%">
+                                <col width="5%">
+                            </colgroup>
+                            <tr style="background-color: #ccc;" id="list">
+                                <th>물품명</th>
+                                <th>수량</th>
+                                <th>단위가격</th>
+                                <th>총 가격</th>
+                                <th>구분</th>
+                                <th>상태</th>
+                                <th></th>
+                            </tr>
+                            <%sales.forEach(function(sale){%>
+                                <%if(sale.type == 1){%>
+                                    <tr>
+                                        <td><input class="form-control onepass" type="text" value="<%=sale.product.product%>" onclick="location.href='/sales/edit/table/<%=sale.id%>'" style="cursor : pointer;" readonly>
+                                            <input type="hidden" class="product" name="onepassProduct" value="<%=sale.product._id%>" readonly>
+                                        </td>
+                                        <td><input class="form-control unit" type="text" name="onepassUnit" value="<%=sale.set%>" readonly numberOnly></td>
+                                        <td><input class="form-control unitPrice" type="text" name="onepassUnitPrice" value="<%=sale.unitPrice%>" numberOnly readonly></td>
+                                        <td><input class="form-control amount" type="text" value="<%=sale.set*sale.unitPrice%>" readonly></td>
+                                        <td><%=sale.typeStatus%></td>
+                                        <td><div class="btn btn-default opshipEachCancel" id="<%=sale.item_id%>"><%=sale.shipdate%></div></td>
+                                        <td>
+                                            <input type="hidden" name="opShip" value="true">
+                                        </td>
+                                    </tr>
+                                    <%} else if(sale.type == 2) {%>
+                                        <tr>
+                                                <td>
+                                                    <select class="form-control product" name="serverProduct" readonly onclick="location.href='/sales/edit/table/<%=sale.id%>'" style="cursor : pointer;">
+                                                        <option value="<%=sale.product._id%>" selected><%=sale.product.product%></option>
+                                                        <% serverList.forEach(function(server){ %>
+                                                            <option value="<%=server._id%>"><%=server.product%></option>
+                                                        <% }) %>
+                                                    </select>
+                                                </td>
+                                                <td><input class="form-control unit" type="text" name="serverUnit" value="<%=sale.set%>" readonly numberOnly></td>
+                                                <td><input class="form-control unitPrice" type="text" name="serverUnitPrice" value="<%=sale.unitPrice%>" numberOnly readonly></td>
+                                                <td><input class="form-control amount" type="text" value="<%=sale.set*sale.unitPrice%>" readonly></td>
+                                                <td><%=sale.typeStatus%></td>
+                                                <td><div class="btn btn-default svshipEachCancel" id="<%=sale.item_id%>"><%=sale.shipdate%></div></td>
+                                                <td>
+                                                    <input type="hidden" name="svShip" value="true">
+                                                </td>
+                                            </tr>
+                                   <%}%>
+                                <%})%>
+                                <%op.forEach(function(onepass){%>
+                                    <%if(onepass.ship === false){%>
+                                    <tr>
+                                        <td><input class="form-control onepass" type="text" value="<%=onepass.product.product%>">
+                                            <input type="hidden" class="product" name="onepassProduct" value="<%=onepass.product._id%>">
+                                        </td>
+                                        <td><input class="form-control unit" type="text" name="onepassUnit" value="<%=onepass.unit%>" numberOnly></td>
+                                        <td><input class="form-control unitPrice" type="text" name="onepassUnitPrice" value="<%=onepass.unitPrice%>" numberOnly></td>
+                                        <td><input class="form-control amount" type="text" value="<%=onepass.unit*onepass.unitPrice%>" readonly></td>
+                                        <td>원패스</td>
+                                        <td><div class="btn btn-success opshipEach" id="<%=onepass._id%>" detail="<%=onepass.product.detail%>">출고전</div></td>
+                                        <td><a class="remove" style="text-decoration: none;"><i class="fas fa-trash-alt"></i></a>
+                                            <input type="hidden" name="opShip" value="<%=onepass.ship%>">
+                                        </td>
+                                    </tr>
+                                    <%}%>
+                                    <%})%>
+                                    <%sv.forEach(function(server){%>
+                                        <%if(server.ship === false){%>
+                                        <tr>
+                                            <td>
+                                                <select class="form-control product"  name="serverProduct" id="">
+                                                    <option value="<%=server.product._id%>" selected hidden><%=server.product.product%></option>
+                                                    <% serverList.forEach(function(server){ %>
+                                                        <option value="<%=server._id%>"><%=server.product%></option>
+                                                    <% }) %>
+                                                </select>
+                                            </td>
+                                            <td><input class="form-control unit" type="text" name="serverUnit" value="<%=server.unit%>" numberOnly></td>
+                                            <td><input class="form-control unitPrice" type="text" name="serverUnitPrice" value="<%=server.unitPrice%>" numberOnly></td>
+                                            <td><input class="form-control amount" type="text" value="<%=server.unit*server.unitPrice%>" readonly></td>
+                                            <td>서버</td>
+                                            <td><div class="btn btn-success svshipEach" id="<%=server._id%>">출고전</div></td>
+                                            <td><a class="remove" style="text-decoration: none;"><i class="fas fa-trash-alt"></i></a>
+                                                <input type="hidden" name="svShip" value="<%=server.ship%>">
+                                            </td>
+                                        </tr>
+                                        <%}%>
+                                        <%})%>
+                                    </table>
+                                </div>
+                                </td>
+                            </tr>
+                        </table>
+                        <div class="panel panel-default">
+                            <div class="panel-heading">일괄출고</div>
+                            <div class="panel-body">
+                                <div class="col-sm-6">
+                                    <div class="btn btn-success opship" style="width : 100%;">원패스 전체출고</div>
+                                </div>
+                                <div class="col-sm-6">
+                                    <div class="btn btn-success svship" style="width : 100%;">서버 전체출고</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="panel panel-default">
+                            <div class="panel-heading">
+                                현장 파일
+                            </div>
+                            <div class="panel-body">
+                                <table class="table table-borderless">
+                                    <tr>
+                                        <td>
+                                            <%if(status.em.use === true){%>
+                                                <div class="btn btn-success use" style="width : 100%;" value="false" target="em">비상벨</div>
+                                                <%} else if(status.em.use === false){%>
+                                                    <div class="btn btn-default unuse" style="width : 100%;" value="true" target="em">비상벨</div>
+                                                    <%}%>
+                                                </td>
+                                                <td>
+                                                <%if(status.op.use === true){%>
+                                                    <div class="btn btn-success use" style="width : 100%;" value="false" target="op">원패스</div>
+                                                    <%} else if(status.op.use === false){%>
+                                                        <div class="btn btn-default unuse" style="width : 100%;" value="true" target="op">원패스</div>
+                                                        <%}%>
+                                                    </td>
+                                                    <td>
+                                                        <%if(status.parking.use === true){%>
+                                                            <div class="btn btn-success use" style="width : 100%;" value="false" target="parking">주차</div>
+                                                        <%} else if(status.parking.use === false){%>
+                                                            <div class="btn btn-default unuse" style="width : 100%;" value="true" target="parking">주차</div>
+                                                        <%}%>
+                                                    </td>
+                                                    <td>
+                                                        <%if(status.ev.use === true){%>
+                                                            <div class="btn btn-success use" style="width : 100%;" value="false" target="ev">엘리베이터</div>
+                                                        <%} else if(status.ev.use === false){%>
+                                                            <div class="btn btn-default unuse" style="width : 100%;" value="true" target="ev">엘리베이터</div>
+                                                        <%}%>
+                                                    </td>
+                                                    <td>
+                                            <%if(status.cctv.use === true){%>
+                                                <div class="btn btn-success use" style="width : 100%;" value="false" target="cctv">CCTV</div>
+                                            <%} else if(status.cctv.use === false){%>
+                                                <div class="btn btn-default unuse" style="width : 100%;" value="true" target="cctv">CCTV</div>
+                                            <%}%>
+                                        </td>
+                                        <td>
+                                            <%if(status.hn.use === true){%>
+                                                <div class="btn btn-success use" style="width : 100%;" value="false" target="hn">홈네트워크</div>
+                                            <%} else if(status.hn.use === false){%>
+                                                <div class="btn btn-default unuse" style="width : 100%;" value="true" target="hn">홈네트워크</div>
+                                            <%}%>
+                                        </td>
+                                    </tr>
+                                </table>
+                            </div>
+                        </div>
+                                        <div class="panel panel-danger">
+                                            <div class="panel-heading">
+                                                현장확인 및 진행률
+                                            </div>
+                                        <div class="panel-body" id="status">
+                                                <%if(status.static.use === true){%>
+                                                    <div class="col-sm-4">
+                                                        <div class="panel panel-default">
+                                                            <div class="panel-heading">
+                                                                공통
+                                                            </div>
+                                                            <div class="panel-body" style="padding : 1%; height : 85px;">
+                                                                    <%status.static.files.forEach(function(data){%>
+                                                                        <% if(data.received === true) {%>
+                                                                                <div class="btn btn-success checked" style="width : 30%; margin : 1%; font-size : 80%; font-size : 80%;" value="false" target="static" no="<%=data.no%>" serial="<%=status.serial%>"><%=data.name%></div>
+                                                                        <% } else { %>
+                                                                                <div class="btn btn-default unchecked" style="width : 30%; margin : 1%; font-size : 80%; font-size : 80%;" value="true" target="static" no="<%=data.no%>" serial="<%=status.serial%>"><%=data.name%></div>
+                                                                        <% } %>
+                                                                    <%})%>     
+                                                            </div>
+                                                        </div>
+                                                    </div> 
+                                                <%}%>
+                                                <%if(status.parking.use === true){%>
+                                                    <div class="col-sm-4 parking">
+                                                        <div class="panel panel-default">
+                                                            <div class="panel-heading">
+                                                                주차
+                                                            </div>
+                                                            <div class="panel-body" style="padding : 1%; height : 85px;">
+                                                                    <%status.parking.files.forEach(function(data){%>
+                                                                        <% if(data.received === true) {%>
+                                                                                <div class="btn btn-success checked" style="width : 30%; margin : 1%; font-size : 80%; font-size : 80%;" value="false" target="parking" no="<%=data.no%>" serial="<%=status.serial%>"><%=data.name%></div>
+
+                                                                        <% } else { %>
+                                                                                <div class="btn btn-default unchecked" style="width : 30%; margin : 1%; font-size : 80%;" value="true" target="parking" no="<%=data.no%>" serial="<%=status.serial%>"><%=data.name%></div>
+                                                                        <% } %>
+                                                                    <%})%>     
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                <%}%>
+                                                <%if(status.cctv.use === true){%>
+                                                    <div class="col-sm-4 cctv">
+                                                        <div class="panel panel-default">
+                                                            <div class="panel-heading">
+                                                                CCTV
+                                                            </div>
+                                                        <div class="panel-body" style="padding : 1%; height : 85px;">
+                                                            <%status.cctv.files.forEach(function(data){%>
+                                                                <% if(data.received === true) {%>
+                                                                        <div class="btn btn-success checked" style="width : 30%; margin : 1%; font-size : 80%;" value="false" target="cctv" no="<%=data.no%>" serial="<%=status.serial%>"><%=data.name%></div>
+                                                                <% } else { %>
+                                                                        <div class="btn btn-default unchecked" style="width : 30%; margin : 1%; font-size : 80%;" value="true" target="cctv" no="<%=data.no%>" serial="<%=status.serial%>"><%=data.name%></div>
+                                                                <% } %>
+                                                            <%})%>     
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                <%}%>
+                                                <%if(status.em.use === true){%>
+                                                    <div class="col-sm-4 em">
+                                                        <div class="panel panel-default">
+                                                            <div class="panel-heading">
+                                                                비상벨
+                                                            </div>
+                                                            <div class="panel-body" style="padding : 1%; height : 85px;">
+                                                                    <%status.em.files.forEach(function(data){%>
+                                                                        <% if(data.received === true) {%>
+                                                                                <div class="btn btn-success checked" style="width : 30%; margin : 1%; font-size : 80%;" value="false" target="em" no="<%=data.no%>" serial="<%=status.serial%>"><%=data.name%></div>
+                                                                        <% } else { %>
+                                                                                <div class="btn btn-default unchecked" style="width : 30%; margin : 1%; font-size : 80%;" value="true" target="em" no="<%=data.no%>" serial="<%=status.serial%>"><%=data.name%></div>
+                                                                        <% } %>
+                                                                    <%})%>     
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                <%}%>
+                                                <%if(status.op.use === true){%>
+                                                    <div class="col-sm-4 op">
+                                                        <div class="panel panel-default">
+                                                            <div class="panel-heading">
+                                                                원패스
+                                                            </div>
+                                                            <div class="panel-body" style="padding : 1%; height : 85px;">
+                                                                <%status.op.files.forEach(function(data){%>
+                                                                    <% if(data.received === true) {%>
+                                                                            <div class="btn btn-success checked" style="width : 30%; margin : 1%; font-size : 80%;" value="false" target="op" no="<%=data.no%>" serial="<%=status.serial%>"><%=data.name%></div>
+                                                                    <% } else { %>
+                                                                            <div class="btn btn-default unchecked" style="width : 30%; margin : 1%; font-size : 80%;" value="true" target="op" no="<%=data.no%>" serial="<%=status.serial%>"><%=data.name%></div>
+                                                                    <% } %>
+                                                                <%})%>                                                                    
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                <%}%>
+                                                <%if(status.ev.use === true){%>
+                                                    <div class="col-sm-4 ev">
+                                                        <div class="panel panel-default">
+                                                            <div class="panel-heading">
+                                                                엘리베이터
+                                                            </div>
+                                                            <div class="panel-body" style="padding : 1%; height : 85px;">
+                                                                    <%status.ev.files.forEach(function(data){%>
+                                                                        <% if(data.received === true) {%>
+                                                                                <div class="btn btn-success checked" style="width : 30%; margin : 1%; font-size : 80%;" value="false" target="ev" no="<%=data.no%>" serial="<%=status.serial%>"><%=data.name%></div>
+                                                                        <% } else { %>
+                                                                                <div class="btn btn-default unchecked" style="width : 30%; margin : 1%; font-size : 80%;" value="true" target="ev" no="<%=data.no%>" serial="<%=status.serial%>"><%=data.name%></div>
+                                                                        <% } %>
+                                                                    <%})%>     
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                <%}%>
+                                                <%if(status.hn.use === true){%>
+                                                    <div class="col-sm-4 hn">
+                                                        <div class="panel panel-default">
+                                                            <div class="panel-heading">
+                                                                홈넷
+                                                            </div>
+                                                            <div class="panel-body" style="padding : 1%; height : 85px;">
+                                                                    <%status.hn.files.forEach(function(data){%>
+                                                                        <% if(data.received === true) {%>
+                                                                                <div class="btn btn-success checked" style="width : 30%; margin : 1%; font-size : 80%;" value="false" target="hn" no="<%=data.no%>" serial="<%=status.serial%>"><%=data.name%></div>
+                                                                        <% } else { %>
+                                                                                <div class="btn btn-default unchecked" style="width : 30%; margin : 1%; font-size : 80%;" value="true" target="hn" no="<%=data.no%>" serial="<%=status.serial%>"><%=data.name%></div>
+                                                                        <% } %>
+                                                                    <%})%>     
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                <%}%>
+                                        </div>
+                                    </div>
+                            <div class="panel panel-default">
+                                <div class="panel-heading">
+                                    파일
+                                </div>
+                                <div class="panel-body">
+                                    <input type="file" class="multi form-control" name="files">
+                                    <div class="panel panel-default" style="margin-top: 2%;">
+                                        <div class="panel-heading">
+                                            파일리스트
+                                        </div>
+                                        <div class="panel-body">
+                                            <table class="table table-borderless">
+                                                <colgroup>
+                                                    <col width="90%">
+                                                    <col width="10%">
+                                                </colgroup>
+                                                <%status.files.forEach(function(file){%>
+                                                    <tr>
+                                                        <td><a href="/uploads/<%=file.filename%>" download=""><%=file.filename%></a></td>
+                                                        <td><a class="file_delete" id="<%=file._id%>" filename="<%=file.filename%>"><i class="fas fa-trash-alt"></i></a></td>
+                                                    </tr>
+                                                <%})%>
+                                            </table>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                                     <input class="btn btn-danger" style="width : 100%;" type="submit" value="제출하기">
+                                </form>
+                                            
+<script>
+    $(document).on('focus', '.datepicker', function(){
+        $(this).datepicker({
+            dateFormat: 'yy-mm-dd'
+        });
+    });
+
+    $(document).on('click', '.unuse', function(){
+        const that = $(this);
+        const obj = {};
+        const countAll = $('#countAll').text();
+        let subject = '';
+        obj.serial = '<%=status.serial%>';
+        obj.target = $(this).attr('target');
+        obj.value = $(this).attr('value');
+        if(obj.target == 'ev') subject = '엘리베이터';
+        if(obj.target == 'em') subject = '비상벨';
+        if(obj.target == 'hn') subject = '홈네트워크';
+        if(obj.target == 'op') subject = '원패스';
+        if(obj.target == 'cctv') subject = 'CCTV';
+        if(obj.target == 'parking') subject = '주차';
+        $.ajax({
+            data : obj,
+            dataType : 'json',
+            type : 'POST',
+            url : '/table/server/file/check'
+        })
+        .done(function(args){
+            that.attr('class', `btn btn-success use`).attr('value', 'false').attr('target', `${obj.target}`);
+            let data = '';
+            `${args.files.forEach(function(file){
+                data = data+'<div class="btn btn-default unchecked" style="margin : 1%; width : 30%; font-size : 80%;" value="'+file.received+'" target="'+obj.target+'" serial="'+obj.serial+'" no='+file.no+'>'+file.name+'</div>'
+            })}`
+            $('#status').append(`
+                <div class="col-sm-4 ${obj.target}">
+                    <div class="panel panel-default">
+                        <div class="panel-heading">
+                            ${subject}
+                        </div>
+                        <div class="panel-body" style="height : 85px; padding : 1%;">
+                            ${data}
+                        </div>
+                    </div>
+                </div>
+            `
+            );
+        })
+        .fail(function(err){
+            console.error(err);
+        });
+    });
+
+        $(document).on('click', '.use', function(){
+        const that = $(this);
+        const obj = {};
+        const countAll = $('#countAll').text();
+        obj.serial = '<%=status.serial%>';
+        obj.target = $(this).attr('target');
+        obj.value = $(this).attr('value');
+        $.ajax({
+            data : obj,
+            dataType : 'json',
+            type : 'POST',
+            url : '/table/server/file/uncheck'
+        })
+        .done(function(args){
+            that.attr('class', `btn btn-default unuse`).attr('value', 'true').attr('target', obj.target)
+            $(`.${obj.target}`).remove();
+        })
+        .fail(function(err){
+            if(err) console.error(err);
+        })
+    });
+
+    $(document).on('click', '#addOnepass', function(){
+        $('#list').after(`
+        <tr>
+            <td><input class="form-control onepass" type="text" placeholder="원패스 제품을 입력해 주세요">
+                <input class="product" type="hidden" name="onepassProduct">
+            </td>
+            <td><input class="form-control unit" type="text" name="onepassUnit" numberOnly></td>
+            <td><input class="form-control unitPrice" type="text" name="onepassUnitPrice" numberOnly></td>
+            <td><input class="form-control amount" type="text" readonly></td>
+            <td>원패스</td>
+            <td><div class="btn btn-success opshipEach" disabled>출고전</div></td>
+            <td><a class="remove" style="text-decoration: none;"><i class="fas fa-trash-alt"></i></a>
+                <input type="hidden" name="opShip" value=false>    
+            </td>
+        </tr>
+        `)
+    });
+
+    $(document).on('click', '#addServer', function(){
+        $('#list').after(
+            `
+            <tr>
+                <td>
+                    <select class="form-control product" name="serverProduct" id="">
+                        <% serverList.forEach(function(server){ %>
+                            <option selected disabled hidden></option>
+                            <option value="<%=server._id%>"><%=server.product%></option>
+                        <% }) %>
+                    </select>
+                </td>
+                <td><input class="form-control unit" type="text" name="serverUnit" numberOnly></td>
+                <td><input class="form-control unitPrice" type="text" name="serverUnitPrice" numberOnly></td>
+                <td><input class="form-control amount" type="text" readonly></td>
+                <td>서버</td>
+                <td><div class="btn btn-success svshipEach" disabled>출고전</div></td>
+                <td><a class="remove" style="text-decoration: none;"><i class="fas fa-trash-alt"></i></a>
+                    <input type="hidden" name="svShip" value=false>    
+                </td>
+            </tr>
+            `
+        )
+    });
+
+$(document).on('submit' ,'.form-group', function(){
+    const products = $('.product').length;
+    for(i=1;i<products+1;i++){
+        let product = $('#table').children('tbody').children('tr').eq(i).children('td').eq(0).children('.product').val();
+        let unit = $('#table').children('tbody').children('tr').eq(i).children('td').eq(1).children('.unit').val();
+        let unitPrice = $('#table').children('tbody').children('tr').eq(i).children('td').eq(2).children('input').val();
+        if(!product || !unit || !unitPrice){
+            alert('필수 값을 모두 채워 주세요');
+            return false;
+        };
+    };
+});
+
+ $(document).on('focusout', '.onepass', function(){
+      const that = $(this);
+      const product = $(this).val();
+      const obj = {};
+      obj.product = product;
+      $.ajax({
+          data : obj,
+          dataType : 'json',
+          type : 'POST',
+          url : '/table/onepass/prodcuct/search',
+      })
+      .done(function(args){
+        const conf = that.closest('tr').next('tr').attr('conf');
+        if(args.searchList.length === 0){
+            alert('그런 이름의 상품은 존재하지 않습니다.');
+            if(conf == 'true'){
+                that.closest('tr').next('tr').remove();
+            }
+            that.val('');
+            return false;
+        } else {
+            let data = '';
+            if(conf == 'true'){
+                that.closest('tr').next('tr').remove();
+            }
+            `${args.searchList.forEach(function(list){
+                data = data+'<a style="margin-right : 1%; font-size : 70%;"class="btn btn-default selected" product="'+list._id+'" price="'+list.price+'" detail="'+list .detail+'">'+list.product+'</a>'
+            })}`
+              that.closest('tr').after(
+                  `<tr conf="true">
+                        <td colspan=7>
+                            ${data}
+                        </td>
+                    </tr>
+                    `
+             );
+        }
+      })
+  });
+
+    $(document).on('click', '.selected', function(){
+      const that = $(this);
+      const product = $(this).text();
+      const unit = $(this).closest('tr').prev('tr').children('td').eq(1).children('input[name="onepassUnit"]').val();
+      that.closest('tr').prev('tr').children('td').eq(0).children('.onepass').val(product);
+      that.closest('tr').prev('tr').children('td').eq(0).children('input[name="onepassProduct"]').val(that.attr('product'));
+      that.closest('tr').prev('tr').children('td').eq(2).children('input[name="onepassUnitPrice"]').val(that.attr('price'));
+      that.closest('tr').prev('tr').children('td').eq(3).children('.amount').val(parseInt(that.attr('price'))*parseInt(unit));
+      that.closest('tr').prev('tr').children('td').eq(5).children('div').attr('detail', that.attr('detail'));
+      that.closest('tr').remove();
+  });
+
+   $(document).on('focusout', '.server', function(){
+      const that = $(this);
+      const product = $(this).val();
+      const obj = {};
+      obj.product = product;
+      $.ajax({
+          data : obj,
+          dataType : 'json',
+          type : 'POST',
+          url : '/table/server/prodcuct/search',
+      })
+      .done(function(args){
+        const conf = that.closest('tr').next('tr').attr('conf');
+        if(args.searchList.length === 0){
+            alert('그런 이름의 상품은 존재하지 않습니다.');
+            if(conf == 'true'){
+                that.closest('tr').next('tr').remove();
+            }
+            that.val('');
+            return false;
+        } else {
+            let data = '';
+            if(conf == 'true'){
+                that.closest('tr').next('tr').remove();
+            }
+            `${args.searchList.forEach(function(list){
+                data = data+'<a style="margin-right : 1%; font-size : 70%;"class="btn btn-default chosen" product="'+list._id+'" price="'+list.price+'">'+list.product+'</a>'
+            })}`
+              that.closest('tr').after(
+                  `<tr conf="true">
+                        <td colspan=7>
+                            ${data}
+                        </td>
+                    </tr>
+                    `
+             );
+        }
+      })
+  });
+
+    $(document).on('click', '.chosen', function(){
+      const that = $(this);
+      const product = $(this).text();
+      const unit = $(this).closest('tr').prev('tr').children('td').eq(1).children('input[name="serverUnit"]').val();
+      that.closest('tr').prev('tr').children('td').eq(0).children('.server').val(product);
+      that.closest('tr').prev('tr').children('td').eq(0).children('input[name="serverProduct"]').val(that.attr('product'));
+      that.closest('tr').prev('tr').children('td').eq(2).children('input[name="serverUnitPrice"]').val(that.attr('price'));
+      that.closest('tr').prev('tr').children('td').eq(3).children('.amount').val(parseInt(that.attr('price'))*parseInt(unit));
+      that.closest('tr').remove();
+  });
+
+
+  $(document).on('click', '.remove', function(){
+      const rows = $('.product').length;
+      if(rows == 1){
+          const flag = confirm('마지막 상품을 삭제할 경우 프로젝트 전체가 삭제될 수 있습니다');
+          if(flag === true){
+              const obj = {};
+              obj.serial = '<%=status.serial%>'
+              $.ajax({
+                  data : obj,
+                  dataType : 'json',
+                  type : 'POST',
+                  url : '/table/server/delete',
+              })
+              .done(function(){
+                  window.location.href = '/table/summary';
+              })
+              .fail(function(err){
+                  if(err) console.error(err);
+              })
+          } else {
+              return false;
+          }
+      }
+      $(this).closest('tr').remove();
+  });
+
+  $(document).on('click', '.opship', function(){
+      const conf = '<%=userData.name%>';
+      if(!conf){
+          alert('다시 로그인 해주세요');
+          window.location.href = '/';
+          return false;
+        } else {
+            const that = $(this);
+            const obj = {};
+            obj.serial = '<%=status.serial%>';
+            obj.subject = '<%=status.subject%>';
+            obj.customer = '<%=status.customer%>';
+          $.ajax({
+              data : obj,
+              dataType : 'json',
+              type : 'POST',
+              url : '/table/shipment/onepass'
+          })
+          .done(function(args){
+              if(args.message === 1){
+                  window.location.href = '/table/schedule/subject/<%=status.serial%>'
+              } else {
+                  alert(`${args.product}의 입고 수량이 부족합니다!`);
+                  window.location.href = '/table/schedule/subject/<%=status.serial%>'
+              }
+          })
+          .fail(function(err){
+              console.log(err);
+          });
+      }
+  });
+
+  $(document).on('change', 'input[name="onepassUnit"]', function(){
+      const unit = $(this).val();
+      const unitPrice =$(this).closest('tr').children('td').eq(2).children('input[name="onepassUnitPrice"]').val();
+      $(this).closest('tr').children('td').eq(3).children('.amount').val(parseInt(unit)*parseInt(unitPrice));
+  });
+
+  $(document).on('change', 'input[name="onepassUnitPrice"]', function(){
+      const unit = $(this).val();
+      const unitPrice =$(this).closest('tr').children('td').eq(1).children('input[name="onepassUnit"]').val();
+      $(this).closest('tr').children('td').eq(3).children('.amount').val(parseInt(unit)*parseInt(unitPrice));
+  });
+
+  $(document).on('change', 'input[name="serverUnit"]', function(){
+      const unit = $(this).val();
+      const unitPrice =$(this).closest('tr').children('td').eq(2).children('input[name="serverUnitPrice"]').val();
+      $(this).closest('tr').children('td').eq(3).children('.amount').val(parseInt(unit)*parseInt(unitPrice));
+  });
+
+  $(document).on('change', 'input[name="serverUnitPrice"]', function(){
+      const unit = $(this).val();
+      const unitPrice =$(this).closest('tr').children('td').eq(1).children('input[name="serverUnit"]').val();
+      $(this).closest('tr').children('td').eq(3).children('.amount').val(parseInt(unit)*parseInt(unitPrice));
+  });
+
+  $(document).on('click', '.svship', function(){
+      const conf = '<%=userData%>'
+      if(!conf){
+          alert('다시 로그인 해주세요');
+          window.location.href = '/';
+          return false;
+      } else {
+          const that = $(this);
+          const obj = {};
+          obj.subject ='<%=status.subject%>';
+          obj.customer = '<%=status.customer%>';
+          obj.serial = '<%=status.serial%>';
+          $.ajax({
+              data : obj,
+              dataType : 'json',
+              type : 'POST',
+              url : '/table/shipment/server'
+          })
+          .done(function(args){
+              if(args.message === 1){
+                  window.location.href = '/table/schedule/subject/<%=status.serial%>'
+              }
+          })
+          .fail(function(err){
+              console.log(err);
+          });
+      }
+  });
+
+  $(document).on('click', '.checked', function(){
+    const that = $(this);
+    const obj = {};
+    let count = parseInt($('#count').text())
+    obj.target = $(this).attr('target');
+    obj.serial = $(this).attr('serial');
+    obj.no = $(this).attr('no');
+    obj.name = $(this).text();
+    $.ajax({
+        data: obj,
+        dataType : 'json',
+        type : 'POST',
+        url : '/table/server/file/receive/cancel'
+    })
+    .done(function(){
+        that.attr('class', 'btn btn-default unchecked');
+    })
+    .fail(function(err){
+        console.error(err);
+    });
+  });
+
+ $(document).on('click', '.unchecked', function(){
+    const that = $(this);
+    const obj = {};
+    let count = parseInt($('#count').text())
+    obj.target = $(this).attr('target');
+    obj.serial = $(this).attr('serial');
+    obj.no = $(this).attr('no');
+    $.ajax({
+        data: obj,
+        dataType : 'json',
+        type : 'POST',
+        url : '/table/server/file/receive'
+    })
+    .done(function(){
+        that.attr('class', 'btn btn-success checked');
+    })
+    .fail(function(err){
+        console.error(err);
+    });
+  });
+$(document).on('click', '.opshipEach', function(){
+    const that = $(this);
+    const obj = {}
+    obj.subject = '<%=status.subject%>'
+    obj.serial = '<%=status.serial%>'
+    obj._id = $(this).attr('id');
+    obj.detail = $(this).attr('detail');
+    obj.customer = '<%=status.customer%>'
+    obj.productname = $(this).closest('tr').children('td').eq(0).children('input.onepass').val();
+    obj.product = $(this).closest('tr').children('td').eq(0).children('input[name="onepassProduct"]').val();
+    obj.unit = $(this).closest('tr').children('td').eq(1).children('input[name="onepassUnit"]').val();
+    obj.unitPrice = $(this).closest('tr').children('td').eq(2).children('input[name="onepassUnitPrice"]').val();
+    $.ajax({
+        data : obj,
+        dataType : 'json',
+        type : 'POST',
+        url : '/table/onepass/ship/each'
+    })
+    .done(function(args){
+        if(args.message == 2){
+            alert(`${obj.productname}의 입고 상품이 부족합니다`);
+            return false;
+        } else {
+            that.closest('tr').children('td').eq(0).children('.onepass').attr('readonly', true);
+            that.closest('tr').children('td').eq(1).children('input[name="onepassUnit"]').attr('readonly', true);
+            that.closest('tr').children('td').eq(2).children('input[name="onepassUnitPrice"]').attr('readonly', true);
+            that.closest('tr').children('td').eq(6).html('<input type="hidden" name="opShip" value="true">');
+            that.attr('class', 'btn btn-default opshipEachCancel').attr('id', args.id).attr('value', args.value).text(args.shipping);
+        }
+    })
+    .fail(function(err){
+        if(err) console.error(err)
+    });
+});
+
+$(document).on('click', '.opshipEachCancel', function(){
+    const that = $(this)
+    const obj = {}
+    obj.serial = '<%=status.serial%>'
+    obj._id = $(this).attr('id');
+    obj.product = $(this).closest('tr').children('td').eq(0).children('input[name="onepassProduct"]').val();
+    obj.unit = $(this).closest('tr').children('td').eq(1).children('input[name="onepassUnit"]').val();
+    obj.unitPrice = $(this).closest('tr').children('td').eq(2).children('input[name="onepassUnitPrice"]').val();
+    $.ajax({
+        data : obj,
+        dataType : 'json',
+        type : 'POST',
+        url : '/table/onepass/ship/cancel/each'
+    })
+    .done(function(args){
+            that.closest('tr').children('td').eq(0).children('.onepass').attr('readonly', false);
+            that.closest('tr').children('td').eq(1).children('input[name="onepassUnit"]').attr('readonly', false);
+            that.closest('tr').children('td').eq(2).children('input[name="onepassUnitPrice"]').attr('readonly', false);
+            that.closest('tr').children('td').eq(6).children('input[name="opShip"]').val(false);
+            that.closest('tr').children('td').eq(6).html(`<a class="remove" style="text-decoration: none;"><i class="fas fa-trash-alt"></i></a>
+            <input type="hidden" name="opShip" value="false"></input>`);
+            that.attr('class', 'btn btn-success opshipEach').attr('id', args.id).attr('value', args.value).text('출고전');
+    })
+    .fail(function(err){
+        if(err) console.error(err)
+    });
+});
+
+$(document).on('click', '.svshipEach', function(){
+    const that = $(this);
+    const obj = {}
+    obj.subject = '<%=status.subject%>'
+    obj.serial = '<%=status.serial%>'
+    obj._id = $(this).attr('id');
+    obj.customer = '<%=status.customer%>'
+    obj.product = $(this).closest('tr').children('td').eq(0).children('select[name="serverProduct"]').val();
+    obj.unit = $(this).closest('tr').children('td').eq(1).children('input[name="serverUnit"]').val();
+    obj.unitPrice = $(this).closest('tr').children('td').eq(2).children('input[name="serverUnitPrice"]').val();
+    $.ajax({
+        data : obj,
+        dataType : 'json',
+        type : 'POST',
+        url : '/table/server/ship/each'
+    })
+    .done(function(args){
+            that.closest('tr').children('td').eq(0).children('select[name="serverProduct"]').attr('readonly', true);
+            that.closest('tr').children('td').eq(1).children('input[name="serverUnit"]').attr('readonly', true);
+            that.closest('tr').children('td').eq(2).children('input[name="serverUnitPrice"]').attr('readonly', true);
+            that.closest('tr').children('td').eq(6).html('<input type="hidden" name="svShip" value="true">');
+            that.attr('class', 'btn btn-default svshipEachCancel').attr('id', args.id).attr('value', args.value).text(args.shipping);
+    })
+    .fail(function(err){
+        if(err) console.error(err)
+    });
+});
+
+$(document).on('change', 'select[name="serverProduct"]', function(){
+    const obj = {};
+    const that = $(this);
+    obj.product = $(this).val();
+    $.ajax({
+        data: obj,
+        dataType : 'json',
+        type : 'POST',
+        url : '/table/server/product/unitPrice'
+    })
+    .done(function(args){
+        that.closest('tr').children('td').eq(2).children('input').val(args.unitPrice);
+    })
+    .fail(function(err){
+        if(err) console.error(err);
+    })
+});
+
+$(document).on('click', '.svshipEachCancel', function(){
+    const that = $(this);
+    const obj = {}
+    obj.serial = '<%=status.serial%>'
+    obj._id = $(this).attr('id');
+    obj.product = $(this).closest('tr').children('td').eq(0).children('select[name="serverProduct"]').val();
+    obj.unit = $(this).closest('tr').children('td').eq(1).children('input[name="serverUnit"]').val();
+    obj.unitPrice = $(this).closest('tr').children('td').eq(2).children('input[name="serverUnitPrice"]').val();
+    $.ajax({
+        data : obj,
+        dataType : 'json',
+        type : 'POST',
+        url : '/table/server/ship/cancel/each'
+    })
+    .done(function(args){
+            that.closest('tr').children('td').eq(0).children('select[name="serverProduct"]').attr('readonly', false);
+            that.closest('tr').children('td').eq(1).children('input[name="serverUnit"]').attr('readonly', false);
+            that.closest('tr').children('td').eq(2).children('input[name="serverUnitPrice"]').attr('readonly', false);
+            that.closest('tr').children('td').eq(6).html(`<a class="remove" style="text-decoration: none;"><i class="fas fa-trash-alt"></i></a>
+            <input type="hidden" name="svShip" value="false"></input>`);
+            that.attr('class', 'btn btn-success svshipEach').attr('id', args.id).attr('value', args.value).text('출고전');
+    })
+    .fail(function(err){
+        if(err) console.error(err)
+    });
+});
+
+    $(document).on("keyup", "input:text[numberOnly]", function() {
+        $(this).val($(this).val().replace(/[^0-9]/g,""));
+    });
+
+    $(document).on("click", ".file_delete", function(){
+        const that = $(this);
+        const obj = {};
+        obj.id = $(this).attr('id');
+        obj.serial = '<%=status.serial%>';
+        obj.filename = $(this).attr('filename');
+        $.ajax({
+            data: obj,
+            dataType: 'json',
+            type: 'POST',
+            url: '/table/file/delete'
+        })
+        .done(function(){
+            that.closest('tr').remove()
+        })
+        .fail(function(err){
+            if(err) console.error(err);
+        })
+    });
+
+</script>
+
+<% include ../footer.ejs %>

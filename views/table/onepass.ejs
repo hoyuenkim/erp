@@ -1,0 +1,524 @@
+<% include ../header.ejs %>
+<% include ../navibar.ejs %>
+
+<div>
+<div class="col-sm-12">
+    <table class="table table-borderless">
+        <tr>
+            <td class="col-sm-10"><h1>
+                원패스 납품 현황
+            </h1></td>
+            <td class="col-sm-2">
+                <a id="add" style="text-decoration:  none; cursor : pointer; color : grey"><h3>추가</h3></a>
+            </td>
+        </tr>
+    </table>
+</div>
+  <table class="table table-borderless table-striped" id="status">
+        <colgroup>
+            <col width="13%"/>
+            <col width="10%"/>
+            <col width="8%"/>
+            <col width="30%"/>
+            <col width="21%"/>
+            <col width="4%"/>
+            <col width="4%"/>
+        </colgroup>
+      <tr id="title" style="background-color: grey">
+          <th>납품현장</th>
+          <th>발주업체</th>
+          <th>장비납품일</th>
+          <th>납품건</th>
+          <th>비고</th>
+          <th>수정</th>
+          <th>출하</th>
+      </tr>
+      <% stats.forEach(function(stat){%>
+          <tr serial="<%=stat.serial%>" manager="<%=stat.manager%>">
+              <td><input class="form-control subject" type="text" readonly value="<%=stat.subject%>" style="cursor : pointer; font-size: 70%;"></td>
+              <td><select style="font-size : 70%;" class="form-control" name="" disabled>
+                  <option value="<%=stat.customer%>" selected><%=stat.customer%></option>
+                  <% customerList.forEach(function(customer){%>
+                    <option value="<%=customer.name%>"><%=customer.name%></option>
+                    <% }); %>
+                </select></td>
+                <td><input  style="font-size : 80%;" class="form-control datepicker" type="text" readonly value="<%=stat.getDate%>" readonly></td>
+                <% if(stat.onepass.length === 0){ %>
+                    <td>
+                        <button class="btn btn-default new" style="width : 100%;" disabled>추가하기</button>
+                    </td>
+                <% } else { %>
+                <td>
+                    <table class="detail">
+                        <colgroup>
+                        <col width="30%"/>
+                        <col width="15%"/>
+                        <col width="23%"/>
+                        <col width="0%">
+                        <col width="7%"/>
+                        <col width="7%"/>
+                        </colgroup>
+                        <% stat.onepass.forEach(function(data){ %>
+                        <tr style="border-bottom: 5px transparent solid;">
+                                <td><input class="form-control product" style="font-size : 70%; cursor : pointer;" type="text" value="<%=data.product.product%>" disabled>
+                                <input type="hidden" name="product" value="<%=data.product._id%>">
+                                </td>
+                                <td><input class="form-control" style="font-size : 70%;" name="unit" type="text" readonly value="<%=data.unit%>"></td>
+                                <td><input class="form-control" style="font-size : 70%;" name="unitPrice" type="text" readonly value="<%=data.unitPrice%>"></td>
+                                <td>
+                                    <input type="hidden" name="ship" value="<%=data.ship%>">                                
+                                </td>
+                                <td><button class="btn btn-default add" disabled>추가</button></td>
+                                <td><button class="btn btn-danger delete" disabled ship="<%=data.ship%>" id="<%=data._id%>"</button>삭제</button></td>
+                            </tr>
+                        <% }); %>
+                    </table>
+                </td>
+                <% } %>
+                <td><input class="form-control" type="text" name="remark" readonly value="<%=stat.remarks%>"></td>
+                    <td>
+                        <button class="btn btn-info edit">수정</button>
+                    </td>
+                    <td>
+                        <button class="btn btn-success shipment">출하</button>
+                    </td>
+                </tr>
+            <%})%>
+            </table>
+            <div class="col-sm-12" style="text-align : center;">
+                <ul>
+                  <%
+                    var offset = 3;
+                    var partialQuery;
+                    if(urlQuery) partialQuery = urlQuery.replace(/&page=(.*?)(&|$)/ig,"");
+                  %>
+                  <% for(i=1;i<=maxPage;i++){ %>
+                    <% if(i<=offset || i>maxPage-offset || (i>=page-(offset-1) && i<=page+(offset-1))){ %>
+                      <% if(i != page){ %>
+                        <li style="display : inline-block;"><a href="/table/onepass?<%=partialQuery%>&page=<%= i %>">[ <%= i %> ]</a></li>
+                        <% } else { %>
+                          <li style="display : inline-block;">[ <b><%= i %></b> ]</li>
+                          <% } %>
+                        <% } else if(i == offset+1 || i == maxPage-offset){ %>
+                          <li style="display : inline-block;">...</li>
+                        <% } %>
+                      <%}%>
+                </ul>
+              </div>
+              <form class="col-sm-12" action="" id="search">
+                  <table class="table">
+                    <tr>
+                      <td class=col-sm-3>
+                        <select class="form-control" name="searchType">
+                          <% var select %>
+                          <option value="subject"
+                          <%= search.searchType=="subject"?select="selected":"" %>>프로젝트명</option>
+                          <option value="customer"
+                          <%= search.searchType=="customer"?select="selected":"" %>>고객명</option>
+                        </select>
+                      </td>
+                      <td class="col-sm-7">
+                        <input class="form-control" type="text" name="searchText" value="<%= select?search.searchText:"" %>">
+                      </td>
+                      <td class="col-sm-2">
+                        <button class="btn btn-default" type="submit" style="width : 100%;">search</button>
+                      </td>
+                    </tr>
+                  </table>
+                </form>
+        </div>
+        </div>
+        
+        <script>
+  $(document).on('focus', '.datepicker', function(){
+    $(this).datepicker({
+    dateFormat: 'yy-mm-dd'
+     });
+  });
+
+  $(document).on('click', '.edit', function(){
+    const rows = $(this).closest('tr').children('td').eq(3).children('table').children('tbody').children('tr').length;
+      $(this).closest('tr').children('td').eq(0).children('input').attr('class', 'form-control');
+      $(this).closest('tr').children('td').eq(0).children('input').attr('readonly', false);
+      $(this).closest('tr').children('td').eq(1).children('select').attr('disabled', false);
+      $(this).closest('tr').children('td').eq(2).children('input').attr('readonly', false);
+      for(i=0;i<rows;i++){
+          if($(this).closest('tr').children('td').eq(3).children('table').children('tbody').children('tr').children('td').children('input[name="ship"]').eq(i).val() == 'false'){
+            $(this).closest('tr').children('td').eq(3).children('table').children('tbody').children('tr').eq(i).children('td').children('input').attr('disabled', false);
+            $(this).closest('tr').children('td').eq(3).children('table').children('tbody').children('tr').eq(i).children('td').children('input').attr('readonly', false);
+
+         }
+      }
+      $(this).closest('tr').children('td').eq(3).children('table').children('tbody').children('tr').children('td').children('button').attr('disabled', false);
+      $(this).closest('tr').children('td').eq(4).children('input').attr('readonly', false);
+      $(this).closest('tr').children('td').eq(3).children('button').attr('disabled', false)
+      $(this).attr('class', 'btn btn-primary confirm');
+      $(this).html('확인');
+  });
+
+  $(document).on('click', '.add', function(){
+      $(this).closest('tr').closest('table').children('tbody:last').append(
+          `
+            <tr style="border-bottom: 10px transparent solid;">
+                      <td><input class="form-control product"  style="font-size : 70%;" type="text" value="">
+                        <input type="hidden" name="product">  
+                      </td>
+                      <td><input class="form-control" style="font-size : 70%;" name="unit" type="text"></td>
+                      <td><input class="form-control" style="font-size : 70%;" name="unitPrice" type="text"></td>
+                      <td><input type="hidden" name="ship" value="false"></td>
+                      <td><button class="btn btn-default add">추가</button></td>
+                      <td><button class="btn btn-danger delete">삭제</button></td>
+            </tr>
+          `
+      );
+  });
+
+      $(document).on('click', '.new', function(){
+      $(this).closest('td').html(
+          `
+          <table>
+            <colgroup>
+                        <col width="30%"/>
+                        <col width="15%"/>
+                        <col width="23%"/>
+                        <col width="7%"/>
+                        <col width="7%"/>
+                        </colgroup>
+            <tr style="border-bottom: 10px transparent solid;">
+                    <td><input class="form-control product" style="font-size : 70%;" type="text" value="">
+                        <input type="hidden" name="product" value="">  
+                    </td>
+                    <td><input class="form-control" style="font-size : 70%;" name="unit" type="text"></td>
+                    <td><input class="form-control" style="font-size : 70%;" name="unitPrice" type="text"></td>
+                    <td><input type="hidden" name="ship" value="false"></td>
+                    <td><button class="btn btn-default add">추가</button></td>
+                    <td><button class="btn btn-danger cancel">삭제</button></td>
+            </tr>
+        </table>
+          `
+      );
+  });
+
+    $(document).on('click', '.cancel', function(){
+    const data = $(this);
+        let rows = $(this).closest('tbody').children('tr').length;
+        const name = data.closest('tr').children('td').eq(0).children('select').val();
+        if(data.closest('tr').children('td').eq(0).children('select').val() === null && rows != 1){
+            data.closest('tr').remove();
+        } else if(rows === 1){
+            data.closest('table').parent('td').html(
+                `<button class="btn btn-default new" style="width : 100%;">추가하기</button>`
+            )
+        }
+  });
+
+  $(document).on('click', '#add', function(){
+      const serial = Date.now();
+      $('#title').after(`
+      <tr serial=${serial}>
+          <td><input class="form-control" type="text"></td>
+          <td><select style="font-size : 70%;" class="form-control" name="">
+              <% customerList.forEach(function(customer){%>
+                <option value="<%=customer.name%>"><%=customer.name%></option>
+              <% }); %>
+          </select></td>
+          <td><input  style="font-size : 80%;" class="form-control datepicker" type="text" readonly></td>
+          <td>
+              <table class="detail" style="border-bottom: 5px transparent solid;">
+                    <colgroup>
+                    <col width="30%"/>
+                    <col width="15%"/>
+                    <col width="23%"/>
+                    <col width="7%"/>
+                    <col width="7%"/>
+                    </colgroup>
+                  <tr>
+                      <td><input class="form-control product" style="font-size : 70%;" type="text" value="">
+                        <input type="hidden" name="product">  
+                      </td>
+                      <td><input class="form-control" style="font-size : 70%;" name="unit" type="text"></td>
+                      <td><input class="form-control" style="font-size : 70%;" name="unitPrice" type="text"></td>
+                      <td><input type="hidden" name="ship" value="false"></td>
+                      <td><button class="btn btn-default add">추가</button></td>
+                      <td><button class="btn btn-danger delete">삭제</button></td>
+                  </tr>
+              </table>
+          </td>
+          <td><input class="form-control" name="remark" type="text"></td>
+          <td><button class="btn btn-primary submit">제출</button></td>
+          <td><button class="btn btn-success submit" disabled>출하</button></td>
+      </tr>
+      `)
+  });
+
+  $(document).on('click', '.delete', function(){
+        const data = $(this);
+        let rows = $(this).closest('tbody').children('tr').length;
+        if($(this).closest('tr').children('td').eq(0).children('input[name="product"]').val() === ''){
+            if(rows != 1){
+                $(this).closest('tr').remove();
+            } else if(rows === 1){
+                $(this).closest('table').closest('tr').remove();
+            }
+        } else {
+            const obj = {};
+            obj.product = $(this).closest('tr').children('td').eq(0).children('input[name="product"]').val();
+            obj.serial = $(this).closest('table').closest('tr').attr('serial');
+            obj._id = $(this).attr('id');
+            obj.unit = $(this).closest('tr').children('td').eq(1).children('input[name="unit"]').val();
+            obj.ship = $(this).attr('ship');
+            obj.type = 1;
+            $.ajax({
+                url : '/table/detail/drop/onepass',
+                type : 'POST',
+                data : obj,
+                dataType : 'json',
+            })
+            .done(function(args){
+                if(args.message == 1 && rows === 1){
+                    data.closest('table').parent('td').html(
+                            `
+                                <button class="btn btn-default new" style="width : 100%;">추가하기</button>
+                            `
+                        )
+                } else if(args.message == 1 && rows != 1){
+                    data.closest('tr').remove();
+                } else {
+                    alert('물품이 모두 삭제되어 해당 프로젝트가 삭제됩니다');
+                    data.closest('table').closest('tr').remove();
+                }
+            })
+            .fail(function(err){
+                if(err) console.error(err);
+            });
+        }
+    });
+
+  $(document).on('click', '.submit', function(){
+      const obj = {};
+      obj.serial = $(this).closest('tr').attr('serial');
+      obj.subject = $(this).closest('tr').children('td').eq(0).children('input').val();
+      obj.customer = $(this).closest('tr').children('td').eq(1).children('select').val();
+      obj.date = $(this).closest('tr').children('td').eq(2).children('input').val();
+      let pdt = $(this).closest('tr').children('td').eq(3).children('table').children('tbody').children('tr').children('td').children("input[name='product']");
+      let ut = $(this).closest('tr').children('td').eq(3).children('table').children('tbody').children('tr').children('td').children("input[name='unit']");
+      let utp = $(this).closest('tr').children('td').eq(3).children('table').children('tbody').children('tr').children('td').children("input[name='unitPrice']");
+      const data = []
+      if(obj.serial === "" || obj.subject === "" || obj.customer === ""){
+          alert('필수값을 모두 채워주세요');
+          return false;
+      }
+      for(i=0;i<pdt.length;i++){
+        data[i] = {product : pdt[i].value, unit : ut[i].value, unitPrice : utp[i].value}
+        if(!pdt[i].value || !ut[i].value || !utp[i].value){
+            alert('필수값을 모두 채워주세요');
+            return false;
+        }
+      }
+      obj.data = JSON.stringify(data);
+      obj.remark = $(this).closest('tr').children('td').eq(4).children('input').val();
+      console.log(obj);
+      $.ajax({
+          data : obj,
+                url : '/table/regist/onepass',
+                type : 'POST',
+                dataType : 'json'
+      })
+      .done(function(args){
+         if(args.message === 1){
+            window.location.href = '/table/onepass'
+         }
+      })
+      .fail(function(err){
+          if (err) console.error(err);
+          throw err;
+      })
+  });
+
+    $(document).on('click', '.confirm', function(){
+      const obj = {};
+      obj.conf = 0;
+      const flag = confirm('고객의 요청에 의한 변경입니까?');
+      if(flag === true){
+          obj.conf = 1;
+      }
+      obj.serial = $(this).closest('tr').attr('serial');
+      obj.subject = $(this).closest('tr').children('td').eq(0).children('input').val();
+      obj.customer = $(this).closest('tr').children('td').eq(1).children('select').val();
+      obj.date = $(this).closest('tr').children('td').eq(2).children('input').val();
+      let pdt = $(this).closest('tr').children('td').eq(3).children('table').children('tbody').children('tr').children('td').children("input[name='product']");
+      let ut = $(this).closest('tr').children('td').eq(3).children('table').children('tbody').children('tr').children('td').children("input[name='unit']");
+      let utp = $(this).closest('tr').children('td').eq(3).children('table').children('tbody').children('tr').children('td').children("input[name='unitPrice']");
+      let ship =  $(this).closest('tr').children('td').eq(3).children('table').children('tbody').children('tr').children('td').children("input[name='ship']");
+      const data = [];
+      if(obj.serial === "" || obj.subject === "" || obj.customer === ""){
+          alert('필수값을 모두 채워주세요');
+          return false;
+      }
+      for(i=0;i<pdt.length;i++){
+        data[i] = {product : pdt[i].value, unit : ut[i].value, unitPrice : utp[i].value, ship : ship[i].value};
+        if(!pdt[i].value || !ut[i].value || !utp[i].value || !ship[i].value){
+            alert('필수값을 모두 채워주세요');
+            return false;
+        }
+      }
+      obj.data = JSON.stringify(data);
+      obj.remarks = $(this).closest('tr').children('td').eq(4).children('input').val();
+      obj.url = $(location).attr('href');
+      console.log(obj)
+      $.ajax({
+          data : obj,
+                url : '/table/edit/confirm/onepass',
+                type : 'POST',
+                dataType : 'json'
+      })
+      .done(function(args){
+         if(args.message === 1){
+            window.location.href = args.urlQuery;
+         }
+      })
+      .fail(function(err){
+          if (err) console.error(err);
+          throw err;
+      })
+  });
+
+  $(document).on('click', '.shipment', function(){
+    const conf = '<%=userData%>';
+    if(!conf){
+        alert('다시 로그인 해주세요');
+        window.location.href = '/';
+        return false;
+    } else {
+        const flag = confirm('정말로 견적을 보내시겠습니까?')
+        if(flag === true){    
+        const tr = $(this).closest('tr'); 
+        const obj = {};
+          obj.serial = $(this).closest('tr').attr('serial');
+          obj.manager = $(this).closest('tr').attr('manager');
+          obj.subject = $(this).closest('tr').children('td').eq(0).children('input').val();
+          obj.customer = $(this).closest('tr').children('td').eq(1).children('select').val();
+          obj.date = $(this).closest('tr').children('td').eq(2).children('input').val();
+          let pdt = $(this).closest('tr').children('td').eq(3).children('table').children('tbody').children('tr').children('td').children("input[name='product']");
+          let ut = $(this).closest('tr').children('td').eq(3).children('table').children('tbody').children('tr').children('td').children("input[name='unit']");
+          let utp = $(this).closest('tr').children('td').eq(3).children('table').children('tbody').children('tr').children('td').children("input[name='unitPrice']");
+          const data = []
+          if(obj.serial === "" || !obj.subject === "" || !obj.customer === "" || !obj.date === ""){
+              alert('필수값을 모두 채워주세요');
+              return false;
+          }
+          for(i=0;i<pdt.length;i++){
+            data[i] = {product : pdt[i].value, unit : ut[i].value, unitPrice : utp[i].value}
+            if(!pdt[i].value || !ut[i].value || !utp[i].value){
+                alert('필수값을 모두 채워주세요');
+                return false;
+            }
+          }
+          obj.data = JSON.stringify(data);
+          obj.remarks = $(this).closest('tr').children('td').eq(4).children('input').val();
+          $.ajax({
+              data : obj,
+              dataType : 'json',
+              type : 'POST',
+              url : '/table/shipment/onepass',
+          })
+          .done(function(args){
+              if(args.message == 2){
+                  alert(`${args.product}의 재고가 부족합니다`);
+                  window.location.href = '/table/onepass'
+              }
+          })
+          .fail(function(err){
+              if(err) console.error(err);
+          })
+        } else {
+            return false;
+        }
+    }
+  });
+
+    $(document).on('click', '.subject', function(){
+      const serial = $(this).closest('tr').attr('serial');
+      window.location.href = '/table/schedule/subject/'+serial
+  });
+
+  $(document).on('click', '.remove', function(){
+      const flag = confirm('정말로 삭제하시겠습니까?');
+      if(flag === true){
+          const tr = $(this).closest('tr');
+          const obj = {};
+          obj.serial = $(this).closest('tr').attr('serial');
+          $.ajax({
+              data: obj,
+              dataType : 'json',
+              type : 'POST',
+              url : '/table/server/delete'
+            })
+            .done(function(args){
+                if(args.message == 1){
+                    tr.remove();
+                }
+            })
+            .fail(function(err){
+                if(err) console.error(err);
+                throw err
+            })
+        } else {
+            return false;
+        }
+  });
+
+  $(document).on('focusout', '.product', function(){
+      const that = $(this);
+      const product = $(this).val();
+      const obj = {};
+      obj.product = product;
+      $.ajax({
+          data : obj,
+          dataType : 'json',
+          type : 'POST',
+          url : '/table/onepass/prodcuct/search',
+      })
+      .done(function(args){
+        const conf = that.closest('tr').next('tr').attr('conf');
+        if(args.searchList.length === 0){
+            alert('그런 이름의 상품은 존재하지 않습니다.');
+            if(conf == 'true'){
+                that.closest('tr').next('tr').remove();
+            }
+            that.val('');
+            return false;
+        } else {
+            let data = '';
+            if(conf == 'true'){
+                that.closest('tr').next('tr').remove();
+            }
+            `${args.searchList.forEach(function(list){
+                data = data+'<a style="margin-right : 1%; font-size : 70%;"class="btn btn-default selected" product="'+list._id+'" price="'+list.price+'">'+list.product+'</a>'
+            })}`
+              that.closest('tr').after(
+                  `<tr conf="true">
+                        <td colspan=5>
+                            ${data}
+                        </td>
+                    </tr>
+                    `
+             );
+        }
+      })
+  });
+
+  $(document).on('click', '.selected', function(){
+      const that = $(this);
+      const product = $(this).text();
+      that.closest('tr').prev('tr').children('td').eq(0).children('.product').val(product);
+      that.closest('tr').prev('tr').children('td').eq(0).children('input[name="product"]').val(that.attr('product'));
+      that.closest('tr').prev('tr').children('td').eq(2).children('input[name="unitPrice"]').val(that.attr('price'));
+      that.closest('tr').remove();
+  });
+
+  
+
+</script>
+
+<% include ../footer.ejs %>

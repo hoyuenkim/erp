@@ -1,0 +1,42 @@
+
+  <script type="text/javascript">
+      $(document).ready(function() {
+          $("#calendar").fullCalendar({
+            header: { left: 'prev,next today', center: 'title', right: 'month,basicWeek,basicDay' }, defaultDate: new Date(),
+                displayEventTime: false,
+                events:[
+                <%challenges.forEach(function(challenge){%>
+                      {title : "challenge <%=challenge.time%>",
+                      start : "<%=challenge.date%>",
+                      url : "/game/challenge/match/<%=challenge.id%>",
+                      backgroundColor : '#FF0080',
+                      borderColor : '#FF0080',
+                    },
+                <%})%>
+                <%guests.forEach(function(guest){%>
+                    {title : "guest <%=guest.time%>",
+                      start : "<%=guest.date%>",
+                      url : "/game/guest/match/<%=guest.id%>",
+                      backgroundColor : '#FF0080',
+                      borderColor : '#FF0080',
+                    },
+                <%})%>
+                    <%pickups.forEach(function(pickup){%>
+                        {title : "pickup <%=pickup.time%>",
+                      start : "<%=pickup.date%>",
+                      url : "/game/3on3/match/<%=pickup.id%>",
+                      backgroundColor : '#FF0080',
+                      borderColor : '#FF0080',
+                    },
+                <%})%>
+                {
+                    title : "training <%=training.time%>",
+                    start : "<%=training.time%>",
+                    dow : ["<%=training.day%>"],
+                    backgroundColor : '#FF0080',
+                    borderColor : '#FF0080',
+                }
+              ]
+          });
+      });
+  </script>

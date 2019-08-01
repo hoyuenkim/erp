@@ -1,0 +1,73 @@
+<% include ../../header.ejs %>
+<% include ../../navibar.ejs %>
+
+<div class="col-sm-offset-1 col-sm-10">
+    <div class="col-sm-12">
+        <% logs.forEach(function(log){ %>
+        <div class="col-sm-3" onclick="location.href='/storage/as/site/<%=log.id%>'">
+            <div class="panel panel-default">
+                <div class="panel-heading">
+                    <%=log.subject%>
+                    <br>
+                    <%=log.product.product%>
+                </div>
+                <div class="panel-body">
+                    <h5><%=log.customer%></h5>
+                    <table class="table table-borderless">
+                        <tr>
+                            <th>전체입고분</th>
+                            <td><%=log.remain.received%></td>
+                        </tr>
+                        <tr>
+                            <th>AS여분</th>
+                            <td><%=parseInt(log.remain.received)-parseInt(log.ship)%></td>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+        </div>
+        <% }) %>
+    </div>
+    <div class="" style="text-align : center;">
+            <ul>
+              <%
+                var offset = 3;
+                var partialQuery;
+                if(urlQuery) partialQuery = urlQuery.replace(/&page=(.*?)(&|$)/ig,"");
+              %>
+              <% for(i=1;i<=maxPage;i++){ %>
+                <% if(i<=offset || i>maxPage-offset || (i>=page-(offset-1) && i<=page+(offset-1))){ %>
+                  <% if(i != page){ %>
+                    <li style="display : inline-block;"><a href="/storage/as?<%=partialQuery%>&page=<%= i %>">[ <%= i %> ]</a></li>
+                    <% } else { %>
+                      <li style="display : inline-block;">[ <b><%= i %></b> ]</li>
+                      <% } %>
+                    <% } else if(i == offset+1 || i == maxPage-offset){ %>
+                      <li style="display : inline-block;">...</li>
+                    <% } %>
+                  <%}%>
+            </ul>
+          </div>
+          <form class="col-sm-12" action="" id="search">
+              <table class="table">
+                <tr>
+                  <td class=col-sm-3>
+                    <select class="form-control" name="searchType">
+                      <% var select %>
+                      <option value="subject"
+                      <%= search.searchType=="subject"?select="selected":"" %>>현장명</option>
+                    </select>
+                  </td>
+                  <td class="col-sm-7">
+                    <input class="form-control" type="text" name="searchText" value="<%= select?search.searchText:"" %>">
+                  </td>
+                  <td class="col-sm-2">
+                    <button class="btn btn-default" type="submit" style="width : 100%;">search</button>
+                  </td>
+                </tr>
+              </table>
+            </form>
+</div>
+</div>
+
+<% include ../../footer.ejs %>

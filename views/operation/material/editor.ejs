@@ -1,0 +1,257 @@
+<% include ../../header.ejs %>
+<% include ../../navibar.ejs %>
+
+<div class="col-sm-offset-1 col-sm-10">
+    <form class="form-group" action="" method="post">
+    <table class="table table-borderless">
+        <tr id="searchBar">
+            <th class="col-sm-2" style="text-align: center;"><h4>제공품명</h4></td>
+            <%if(material){%>
+                <td class="col-sm-10"><input class="form-control" type="text" id="product" value="<%=material.product.product%>">
+                <input type="hidden" name="product" value="<%=material.product._id%>">
+            <%} else {%>
+                <td class="col-sm-10"><input class="form-control" type="text" id="product"></td>
+                <input type="hidden" name="product">
+            <%}%>
+            </td>
+        </tr>
+        <tr>
+            <td colspan=2>
+                    <div class="col-sm-12" style="border : #F2F2F2 0.5px solid; border-radius: 10px; padding : 1%; margin-bottom : 1%;">
+                        <div class="col-sm-12" style="text-align: right; padding : 1%;">
+                            <div class="btn btn-default" id="add">추가하기</div>
+                        </div>
+                        <div class="col-sm-12">
+                            <table class="table table-borderless" id="list">
+                                <tr style="background-color: #F2F2F2;">
+                                    <th>부품명</th>
+                                    <th>수량</th>
+                                    <th>삭제</th>
+                                </tr>
+                                <%if(!material){%>
+                                <tr>
+                                    <td>
+                                        <input class="form-control parts" type="text">
+                                        <input type="hidden" name="parts">
+                                    </td>
+                                    <td>
+                                        <input class="form-control" type="text" name="unit" numberOnly>
+                                    </td>
+                                    <td>
+                                        <a class="delete"><i class="fas fa-trash-alt"></i></a>
+                                    </td>
+                                </tr>
+                                <%} else {%>
+                                    <%material.parts.forEach(function(part){%>
+                                        <td>
+                                            <input class="form-control parts" value="<%=part.product.product%>" type="text">
+                                            <input type="hidden" name="parts" value="<%=part.product._id%>">
+                                        </td>
+                                        <td>
+                                            <input class="form-control" type="text" name="unit" value="<%=part.unit%>" numberOnly>
+                                        </td>
+                                        <td>
+                                            <a class="delete"><i class="fas fa-trash-alt"></i></a>
+                                        </td>
+                                    <%})%>
+                                <% } %>
+                            </table>
+                        </div>
+                        </div>
+                        <input class="btn btn-danger" type="submit" style="width : 100%;" value="제출하기">
+                    </div>
+            </td>
+        </tr>
+    </table>
+</form>
+</div>
+
+<script>
+    
+    $(document).on("keyup",  "input:text[numberOnly]", function() {
+            $(this).val($(this).val().replace(/[^0-9]/g,""));
+    });
+
+    $('.form-group').submit(function(){
+        if(!$('input[name="product"]').val()){
+            alert('필수 값을 채워주세요.')
+            return false;
+        }
+        const rows = $('.parts').length+1;
+        for(i=1;i<rows;i++){
+            let parts = $('#list').children('tbody').children('tr').eq(i).children('td').eq(0).children('input[name=parts]').val();
+            let unit = $('#list').children('tbody').children('tr').eq(i).children('td').eq(1).children('input[name="unit"]').val();
+            if(!parts || !unit){
+                alert('필수값을 채워주세요');
+                return false;
+            }
+        }
+   });
+
+    $('#add').click(function(){
+        $('#list > tbody:last').append(
+            `
+            <tr>
+                <td>
+                    <input class="form-control parts" type="text">
+                    <input type="hidden" name="parts">
+                </td>
+                <td>
+                    <input class="form-control" type="text" name="unit" numberOnly>
+                </td>
+                
+                <td>
+                    <a class="delete"><i class="fas fa-trash-alt"></i></a>
+                </td>
+            </tr>
+            `
+        )
+    });
+
+        $(document).on('change', '.parts', function(){
+            const that = $(this);
+            const obj = {};
+            obj.product = $(this).val();
+            $.ajax({
+                data : obj,
+                dataType : 'json',
+                type : 'POST',
+                url : '/operation/parts/search'
+            })
+            .done(function(args){
+                if(args.searchList.length == 0){    
+                    alert('그런 이름을 가진 부품은 존재하지 않습니다.')
+                    if(confirm(`${obj.product}를 부품재고에 추가하시겠습니까?`)){
+                        $.ajax({
+                            url : '/operation/parts/regist',
+                            data : obj,
+                            dataType : 'json',
+                            type : 'POST'
+                        })
+                        .done(function(args){
+                            alert(`${obj.product}가 부품재고에 추가되었습니다`);
+                            that.val('');
+                        })
+                        .fail(function(err){
+                            if(err) console.error(err); 
+                        })
+                    } else {
+                        that.val('');
+                        return false;
+                    }
+                    const conf = that.closest('tr').next('tr').attr('conf')
+                    if(conf == 'true') that.closest('tr').next('tr').remove();
+                    that.val('');
+                    return false;
+                } else {
+                    let data = '';
+                    `${args.searchList.forEach(function(list){
+                        data = data+'<a style="margin-right : 1%;"class="btn btn-default selected" id="'+list._id+'">'+list.product+'</a>'
+                    })}`
+                    that.closest('tr').after(`
+                        <tr conf="true">
+                            <td colspan="2">
+                                ${data}
+                            </td>
+                        </tr>
+                    `)
+                }   
+                })
+            .fail(function(err){
+                if(err) console.error(err);
+            });
+        });
+
+        $(document).on('click', '.selected', function(){
+            const that = $(this);
+            const val = $(this).text();
+            const id = $(this).attr('id');
+            that.closest('tr').prev('tr').children('td').eq(0).children('input[name="parts"]').val(id);
+            that.closest('tr').prev('tr').children('td').eq(0).children('input.parts').val(val);
+            that.closest('tr').remove();
+        });
+
+
+        $(document).on('focusout', '#product', function(){
+            const that = $(this);
+            const val = $(this).val();
+            if(!val){
+                alert('값을 넣어주세요');
+                
+                return false;
+            }
+            const obj = {};
+            obj.subject = val;
+            $.ajax({
+                data: obj,
+                dataType : 'json',
+                type : 'POST',
+                url : '/operation/subject/search'
+            })
+            .done(function(args){
+                if(args.message === 0){
+                    alert('이미 존재하는 제공품/제품입니다');
+                    return false;
+                } else if(args.searchList.length === 0){
+                    const flag = confirm(`${val}를 새로운 제공품으로 등록하시겠습니까?`);
+                    if(flag === true){
+                        const obj = {};
+                        obj.subject = val;
+                        $.ajax({
+                            data : obj,
+                            dataType : 'json',
+                            type : 'POST',
+                            url : '/operation/storage/regist'
+                        })
+                        .done(function(args){
+                            alert(`${args.product}가 새로운 재공품으로 등록되었습니다`);
+                        })
+                        .fail(function(err){
+                            if(err) console.error(err);
+                            that.val('');
+                            return false;
+                        });
+                    } else {
+                        $('#searchList').remove();
+                    }
+                } else {
+                    $('#searchList').remove();
+                    let data = '';
+                        `${args.searchList.forEach(function(list){
+                            data = data+'<a style="margin-right : 1%;"class="btn btn-default chosen" product="'+list._id+'">'+list.product+'</a>'
+                        })}`
+                        $('#searchBar').after(
+                            `
+                                <tr id="searchList">
+                                    <td colspan="2">
+                                        <div style="border : 1px #f2f2f2 solid; padding : 1%; border-radius : 5px;">
+                                        ${data}
+                                        </div>
+                                    </td>
+                                </tr>
+                            `
+                        )
+                }
+            })
+        });
+
+        $(document).on('click', '.chosen', function(){
+            const product = $(this).text();
+            const _id = $(this).attr('product');
+            $('#product').val(product);
+            $('input[name=product]').val(_id);
+            $('#searchList').remove();
+        });
+
+        $(document).on('click', '.delete', function(){
+            const rows = $('#list').children('tbody').children('tr').length
+            // alert(rows);
+            if(rows == 2){
+                return false;
+            } else {
+                $(this).closest('tr').remove();
+            }
+        });
+</script>
+
+<% include ../../footer.ejs %>

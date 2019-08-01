@@ -1,0 +1,81 @@
+<div class="col-sm-12" style="background-color: #F2F2F2; border-radius: 5px; padding : 1%;">
+    <div class="panel panel-default">
+        <div class="panel-heading">
+            comment
+        </div>
+        <div class="comment_area panel-body" style="border-radius: 5px; background-color: #ffffff; padding : 1%; padding-bottom: 4%;">
+            <%comments.forEach(function(comment){%>
+                <div style="padding-bottom : 5%; padding-top: 1%; border-bottom-style: dotted;">
+                    <div class="col-sm-2">
+                        <%=comment.author.profile.name%>
+                    </div>
+                    <div class="col-sm-9">
+                        <%=comment.content%>
+                    </div>
+                    <div class="col-sm-1">
+                        <%if(userData && userData._id == comment.author._id){%>
+                        <a class="comment_delete" id="<%=comment.id%>"><i class="far fa-trash-alt"></i></a>
+                        <%}%>
+                    </div>
+                </div>
+            <%})%>
+        </div>
+    </div> 
+       <div class="col-sm-12">
+            <div class="col-sm-10">
+                <input class="form-control" id="comment" type="text">
+            </div>
+            <div class="col-sm-2">
+                <input id="submit" class="btn btn-default" type="submit" value="submit">
+            </div>
+        </div>
+    </div>
+
+    
+<script>
+        $('#submit').click(function(){
+            if("<%=userData%>" == ""){
+                alert('you have to login first');
+                return false;
+            }
+            if($('#comment').val() == "") return false;
+            const obj = new Object();
+            obj.comment = $('#comment').val();
+            obj.target = <%=content.id%>;
+            $.ajax({
+                url : '/static/comment/write/<%=section%>',
+                type : 'POST',
+                data : obj,
+                dataType : "json"
+            })
+            .done(function(args){
+                if(args.message == 1){
+                    $('#comment').val("");
+                    $('.comment_area').append('<div style="padding-top : 1%; padding-bottom : 5%; border-bottom-style: dotted;"><div class="col-sm-2">'+args.name+'</div><div class="col-sm-9">'+args.comment+'</div><div class="col-sm-1"><a class="comment_delete" id="'+args.id+'"><i class="far fa-trash-alt"></i></a></div></div>')
+                }
+            })
+            .fail(function(err){
+                if(err) console.error
+            })
+        });
+
+        $(document).on('click', '.comment_delete', function(){
+            const obj = new Object();
+            const parent = $(this).parent().parent();
+            obj.id = $(this).attr('id');
+            $.ajax({
+                url : '/static/comment/delete/<%=section%>',
+                type : 'post',
+                data : obj,
+                dataType : "json"
+            })
+            .done(function(args){
+                if(args.message == 1){
+                    parent.remove();
+                }
+            })
+            .fail(function(err){
+                if(err) console.error
+            });
+        });
+    </script>
