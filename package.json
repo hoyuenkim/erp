@@ -35,7 +35,7 @@
     "google-oauth-token": "0.0.2",
     "google-oauth2-token": "^0.2.0",
     "google-tokens": "0.0.2",
-    "googleapis": "^33.0.0",
+    "googleapis": "^39.1.0",
     "grunt": "^1.0.1",
     "jsonwebtoken": "^8.3.0",
     "moment": "^2.22.2",
